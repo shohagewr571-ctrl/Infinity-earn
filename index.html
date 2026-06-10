@@ -1745,7 +1745,7 @@
         const botUsername = '@infinityearnmony_bot'; // আপনার বটের ইউজারনেম এখানে দিন
 
         let appState = JSON.parse(localStorage.getItem('appState')) || {
-            balance: 0, // Reduced from 100000 to 1000 points
+            balance: 0, // Reduced from 0 to 0 points
             totalEarnings: 0,
             adsWatched: 0,
             dailyTasksCompleted: 0,
@@ -2043,8 +2043,8 @@
                 return;
             }
 
-            if (amount < 1000) {
-                showCustomAlert('Minimum Withdrawal', 'Minimum withdrawal is 1,000 points ($1.00)', '⚠️');
+            if (amount < 5000) {
+                showCustomAlert('Minimum Withdrawal', 'Minimum withdrawal is 5000 points ($4.20)', '⚠️');
                 return;
             }
 
