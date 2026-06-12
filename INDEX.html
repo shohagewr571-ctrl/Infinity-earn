@@ -1,0 +1,1410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <title>Infinity Earn | Telegram Mini App</title>
+  <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    :root {
+      --bg-page: #f5f7fb;
+      --bg-white: #ffffff;
+      --bg-gray: #f8f9fc;
+      --text-dark: #1a1f36;
+      --text-gray: #6b7280;
+      --text-light: #9ca3af;
+      --blue-primary: #3b82f6;
+      --blue-dark: #2563eb;
+      --green: #10b981;
+      --orange: #f59e0b;
+      --red: #ef4444;
+      --purple: #8b5cf6;
+      --border: #e5e7eb;
+      --shadow: 0 1px 3px rgba(0,0,0,0.05);
+      --shadow-lg: 0 10px 25px -5px rgba(0,0,0,0.05);
+    }
+
+    body.dark {
+      --bg-page: #0f172a;
+      --bg-white: #1e293b;
+      --bg-gray: #162236;
+      --text-dark: #f1f5f9;
+      --text-gray: #94a3b8;
+      --border: #334155;
+    }
+
+    body {
+      background: var(--bg-page);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      color: var(--text-dark);
+      padding-bottom: 70px;
+    }
+
+    .app {
+      max-width: 450px;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .header {
+      background: var(--bg-white);
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo-section h1 {
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .logo-section p {
+      font-size: 11px;
+      color: var(--text-gray);
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .level-badge {
+      background: #3b82f6;
+      color: white;
+      padding: 4px 10px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .avatar {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 700;
+      font-size: 18px;
+    }
+
+    .balance-card {
+      background: var(--bg-white);
+      margin: 16px;
+      padding: 20px;
+      border-radius: 24px;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border);
+    }
+
+    .balance-label {
+      font-size: 14px;
+      color: var(--text-gray);
+      margin-bottom: 4px;
+    }
+
+    .balance-amount {
+      font-size: 34px;
+      font-weight: 800;
+      color: var(--text-dark);
+    }
+
+    .balance-stats {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+
+    .balance-stat {
+      flex: 1;
+      text-align: center;
+    }
+
+    .balance-stat-value {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .balance-stat-label {
+      font-size: 11px;
+      color: var(--text-gray);
+      margin-top: 4px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin: 0 16px 20px 16px;
+    }
+
+    .stat-card {
+      background: var(--bg-white);
+      padding: 14px;
+      border-radius: 20px;
+      border: 1px solid var(--border);
+    }
+
+    .stat-icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+
+    .stat-title {
+      font-size: 11px;
+      color: var(--text-gray);
+      margin-bottom: 4px;
+    }
+
+    .stat-number {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .section {
+      margin: 0 16px 20px 16px;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .section-link {
+      font-size: 12px;
+      color: #3b82f6;
+    }
+
+    .ads-card {
+      background: var(--bg-white);
+      border-radius: 24px;
+      padding: 16px;
+      border: 1px solid var(--border);
+    }
+
+    .progress-bar {
+      background: var(--border);
+      height: 6px;
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 12px 0;
+    }
+
+    .progress-fill {
+      background: #3b82f6;
+      height: 100%;
+      width: 50%;
+      border-radius: 3px;
+    }
+
+    .ad-button {
+      background: linear-gradient(135deg, #3b82f6, #2563eb);
+      border-radius: 16px;
+      padding: 20px;
+      margin: 16px 0 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    .ad-button:active {
+      transform: scale(0.98);
+    }
+
+    .ad-button-info {
+      color: white;
+    }
+
+    .ad-button-title {
+      font-weight: 600;
+      font-size: 18px;
+    }
+
+    .ad-button-price {
+      font-size: 24px;
+      font-weight: 800;
+      margin-top: 4px;
+    }
+
+    .ad-button-sub {
+      font-size: 12px;
+      opacity: 0.8;
+      margin-top: 4px;
+    }
+
+    .watch-btn-large {
+      background: white;
+      color: #3b82f6;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 40px;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .ad-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.95);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .ad-modal-content {
+      background: var(--bg-white);
+      border-radius: 28px;
+      width: 90%;
+      max-width: 380px;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .ad-counter {
+      font-size: 48px;
+      font-weight: 800;
+      color: #3b82f6;
+      margin: 20px 0;
+    }
+
+    .ad-progress {
+      width: 100%;
+      height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+      margin: 20px 0;
+    }
+
+    .ad-progress-fill {
+      height: 100%;
+      background: #3b82f6;
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .close-modal-btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 40px;
+      font-weight: 600;
+      margin-top: 16px;
+      cursor: pointer;
+    }
+
+    .task-btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .leaderboard-list {
+      background: var(--bg-white);
+      border-radius: 24px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .leaderboard-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .leaderboard-item:last-child {
+      border-bottom: none;
+    }
+
+    .rank {
+      width: 32px;
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .rank-1 { color: #fbbf24; }
+    .rank-2 { color: #94a3b8; }
+    .rank-3 { color: #cd7f32; }
+
+    .leaderboard-name {
+      flex: 1;
+      font-weight: 500;
+    }
+
+    .leaderboard-amount {
+      font-weight: 700;
+      color: #10b981;
+    }
+
+    .referral-card {
+      background: var(--bg-white);
+      border-radius: 24px;
+      padding: 16px;
+      border: 1px solid var(--border);
+    }
+
+    .referral-link-box {
+      background: var(--bg-gray);
+      padding: 12px;
+      border-radius: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .copy-btn {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      max-width: 450px;
+      margin: 0 auto;
+      background: var(--bg-white);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      padding: 10px 16px 22px;
+      z-index: 100;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      color: var(--text-gray);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .nav-item.active {
+      color: #3b82f6;
+    }
+
+    .nav-icon {
+      font-size: 22px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--text-dark);
+      color: var(--bg-white);
+      padding: 10px 20px;
+      border-radius: 40px;
+      font-size: 14px;
+      z-index: 200;
+      white-space: nowrap;
+    }
+
+    .page {
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .btn-primary {
+      background: #3b82f6;
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 40px;
+      font-weight: 600;
+      width: 100%;
+      margin-top: 12px;
+      cursor: pointer;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 14px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: var(--bg-gray);
+      color: var(--text-dark);
+      margin: 8px 0;
+      font-size: 14px;
+    }
+
+    label {
+      font-weight: 500;
+      font-size: 14px;
+      margin-top: 8px;
+      display: block;
+    }
+
+    .ad-warning {
+      background: #fef3c7;
+      color: #d97706;
+      padding: 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      margin-top: 12px;
+      text-align: center;
+    }
+
+    body.dark .ad-warning {
+      background: #422800;
+      color: #fbbf24;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-gray);
+    }
+  </style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="loading">Loading...</div>
+</div>
+
+<script>
+  // Firebase Configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyBXY_T6Zrkvb705xe3OPPuaCJ8opx3z6_0",
+    authDomain: "oreo-92d94.firebaseapp.com",
+    projectId: "oreo-92d94",
+    storageBucket: "oreo-92d94.firebasestorage.app",
+    messagingSenderId: "686553199438",
+    appId: "1:686553199438:web:1e568d100011656ae5641f"
+  };
+
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const database = firebase.database();
+  const auth = firebase.auth();
+
+  const tg = window.Telegram?.WebApp;
+  if (tg) {
+    tg.expand();
+    tg.enableClosingConfirmation();
+  }
+
+  const MONETAG_ZONE_ID = "11129283";
+  
+  let currentUser = null;
+  let userId = null;
+  let currentPage = "dashboard";
+
+  // Helper Functions
+  function showToast(msg) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerText = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
+    if (tg) tg.HapticFeedback?.impactOccurred('light');
+  }
+
+  // Show Monetag Ad
+  function showMonetagAd(callback) {
+    const adContainer = document.createElement('div');
+    adContainer.style.position = 'fixed';
+    adContainer.style.top = '0';
+    adContainer.style.left = '0';
+    adContainer.style.right = '0';
+    adContainer.style.bottom = '0';
+    adContainer.style.zIndex = '2000';
+    adContainer.style.backgroundColor = 'rgba(0,0,0,0.95)';
+    adContainer.style.display = 'flex';
+    adContainer.style.alignItems = 'center';
+    adContainer.style.justifyContent = 'center';
+    
+    const adInner = document.createElement('div');
+    adInner.style.width = '100%';
+    adInner.style.maxWidth = '400px';
+    adInner.style.backgroundColor = '#fff';
+    adInner.style.borderRadius = '20px';
+    adInner.style.padding = '20px';
+    adInner.style.textAlign = 'center';
+    
+    adInner.innerHTML = `
+      <div style="margin-bottom: 20px;">
+        <div style="font-size: 48px; margin-bottom: 10px;">🎬</div>
+        <h3 style="margin-bottom: 10px;">Monetag Ad</h3>
+        <p style="color: #666; margin-bottom: 20px;">Watch this ad to earn rewards</p>
+        <div style="width: 100%; height: 4px; background: #e0e0e0; border-radius: 2px; overflow: hidden; margin-bottom: 20px;">
+          <div id="adProgressFill" style="width: 0%; height: 100%; background: #3b82f6;"></div>
+        </div>
+        <div style="font-size: 14px; color: #888;" id="adStatusText">Ad loading...</div>
+      </div>
+    `;
+    
+    adContainer.appendChild(adInner);
+    document.body.appendChild(adContainer);
+    
+    let progress = 0;
+    const interval = setInterval(() => {
+      progress += 20;
+      const fill = document.getElementById('adProgressFill');
+      const statusText = document.getElementById('adStatusText');
+      if (fill) fill.style.width = progress + '%';
+      if (statusText) statusText.innerText = `Watching ad... ${progress}%`;
+      
+      if (progress >= 100) {
+        clearInterval(interval);
+        if (statusText) statusText.innerText = 'Ad completed!';
+        setTimeout(() => {
+          adContainer.remove();
+          if (callback) callback(true);
+        }, 500);
+      }
+    }, 800);
+    
+    const script = document.createElement('script');
+    script.src = `https://monetag.io/static/legacy/legacy_ng_ads.js`;
+    script.async = true;
+    document.head.appendChild(script);
+  }
+
+  // Update user data to Firebase
+  async function updateUserData(data) {
+    if (!userId) return;
+    await database.ref(`users/${userId}`).update(data);
+  }
+
+  // Add transaction
+  async function addTransaction(type, amount) {
+    if (!userId) return;
+    const transaction = {
+      type: type,
+      amount: amount,
+      date: new Date().toISOString(),
+      timestamp: Date.now()
+    };
+    await database.ref(`users/${userId}/transactions`).push(transaction);
+    // Also keep last 10 in array for quick access
+    const snapshot = await database.ref(`users/${userId}/recentTransactions`).once('value');
+    let recent = snapshot.val() || [];
+    recent.unshift(transaction);
+    if (recent.length > 10) recent.pop();
+    await database.ref(`users/${userId}/recentTransactions`).set(recent);
+  }
+
+  // Add earnings
+  async function addEarnings(amount, source) {
+    if (!currentUser || !userId) return;
+    const newBalance = (currentUser.totalBalance || 0) + amount;
+    const newWithdrawable = (currentUser.withdrawable || 0) + amount;
+    const newTodayEarnings = (currentUser.todayEarnings || 0) + amount;
+    const newTotalEarnings = (currentUser.totalEarnings || 0) + amount;
+    
+    await updateUserData({
+      totalBalance: newBalance,
+      withdrawable: newWithdrawable,
+      todayEarnings: newTodayEarnings,
+      totalEarnings: newTotalEarnings
+    });
+    
+    await addTransaction(source, amount);
+    
+    currentUser.totalBalance = newBalance;
+    currentUser.withdrawable = newWithdrawable;
+    currentUser.todayEarnings = newTodayEarnings;
+    currentUser.totalEarnings = newTotalEarnings;
+    
+    showToast(`+₹${amount.toFixed(2)} from ${source}`);
+    render();
+  }
+
+  // Watch 3 Ads Bundle (30 points)
+  async function startWatchingAds() {
+    if (!currentUser) return;
+    const adLimit = currentUser.adLimit || { used: 0, max: 20 };
+    if (adLimit.used + 3 > adLimit.max) {
+      const remaining = adLimit.max - adLimit.used;
+      if (remaining <= 0) {
+        showToast("Daily ad limit reached! Come back tomorrow.");
+        return;
+      }
+      showToast(`You can only watch ${remaining} more ads today`);
+      return;
+    }
+    
+    let currentAdIndex = 0;
+    const totalAds = 3;
+    const rewardAmount = 30;
+    
+    function showAdModal() {
+      const modal = document.createElement('div');
+      modal.className = 'ad-modal';
+      modal.innerHTML = `
+        <div class="ad-modal-content">
+          <div style="font-size: 48px; margin-bottom: 10px;">📺</div>
+          <h3>Watch Ads Bundle</h3>
+          <div class="ad-counter">Ad ${currentAdIndex + 1} of ${totalAds}</div>
+          <div class="ad-progress">
+            <div class="ad-progress-fill" style="width: ${(currentAdIndex / totalAds) * 100}%"></div>
+          </div>
+          <p style="margin: 10px 0; color: var(--text-gray);">Complete all ${totalAds} ads to earn ${rewardAmount} points!</p>
+          <button class="close-modal-btn" id="watchBundleAdBtn">Watch Ad Now</button>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      const watchBtn = document.getElementById('watchBundleAdBtn');
+      if (watchBtn) {
+        watchBtn.onclick = () => {
+          modal.remove();
+          showMonetagAd(async (success) => {
+            if (success) {
+              currentAdIndex++;
+              const newAdLimit = { ...adLimit, used: adLimit.used + 1 };
+              await updateUserData({ adLimit: newAdLimit });
+              adLimit.used++;
+              currentUser.adLimit = newAdLimit;
+              
+              if (currentAdIndex >= totalAds) {
+                await addEarnings(rewardAmount, "3 Ads Bundle (30 points)");
+                const newAdsWatched = (currentUser.adsWatched || 0) + totalAds;
+                await updateUserData({ adsWatched: newAdsWatched });
+                currentUser.adsWatched = newAdsWatched;
+                showToast(`🎉 Congratulations! You earned ${rewardAmount} points!`);
+              } else {
+                showAdModal();
+              }
+            } else {
+              showToast("Ad failed to load. Please try again.");
+            }
+          });
+        };
+      }
+    }
+    
+    showAdModal();
+  }
+
+  // Daily Bonus - 4 ads then 10 points
+  async function startDailyBonus() {
+    if (!currentUser) return;
+    if (currentUser.dailyBonusClaimed) {
+      showToast("You've already claimed today's daily bonus! Come back tomorrow.");
+      return;
+    }
+    
+    const adLimit = currentUser.adLimit || { used: 0, max: 20 };
+    if (adLimit.used + 4 > adLimit.max) {
+      const remaining = adLimit.max - adLimit.used;
+      if (remaining <= 0) {
+        showToast("Daily ad limit reached! Come back tomorrow.");
+        return;
+      }
+      showToast(`You can only watch ${remaining} more ads today. Try again later.`);
+      return;
+    }
+    
+    let currentAdIndex = 0;
+    const totalAds = 4;
+    const bonusReward = 10;
+    
+    function showAdModal() {
+      const modal = document.createElement('div');
+      modal.className = 'ad-modal';
+      modal.innerHTML = `
+        <div class="ad-modal-content">
+          <div style="font-size: 48px; margin-bottom: 10px;">🎁</div>
+          <h3>Daily Bonus</h3>
+          <div class="ad-counter">Ad ${currentAdIndex + 1} of ${totalAds}</div>
+          <div class="ad-progress">
+            <div class="ad-progress-fill" style="width: ${(currentAdIndex / totalAds) * 100}%"></div>
+          </div>
+          <p style="margin: 10px 0; color: var(--text-gray);">Watch all ${totalAds} ads to earn ${bonusReward} points!</p>
+          <button class="close-modal-btn" id="bonusAdBtn">Watch Ad Now</button>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      const watchBtn = document.getElementById('bonusAdBtn');
+      if (watchBtn) {
+        watchBtn.onclick = () => {
+          modal.remove();
+          showMonetagAd(async (success) => {
+            if (success) {
+              currentAdIndex++;
+              const newAdLimit = { ...adLimit, used: adLimit.used + 1 };
+              await updateUserData({ adLimit: newAdLimit });
+              adLimit.used++;
+              currentUser.adLimit = newAdLimit;
+              
+              if (currentAdIndex >= totalAds) {
+                await addEarnings(bonusReward, "Daily Bonus (4 Ads Completed)");
+                const newAdsWatched = (currentUser.adsWatched || 0) + totalAds;
+                await updateUserData({ 
+                  adsWatched: newAdsWatched,
+                  dailyBonusClaimed: true 
+                });
+                currentUser.adsWatched = newAdsWatched;
+                currentUser.dailyBonusClaimed = true;
+                showToast(`🎉 Congratulations! You earned ${bonusReward} points!`);
+              } else {
+                showAdModal();
+              }
+            } else {
+              showToast("Ad failed to load. Please try again.");
+            }
+          });
+        };
+      }
+    }
+    
+    showAdModal();
+  }
+
+  // Complete Task
+  async function completeTask(taskId) {
+    if (!currentUser) return;
+    const tasks = currentUser.tasks || [];
+    const task = tasks.find(t => t.id === taskId);
+    if (!task || task.completed) {
+      showToast("Task already completed");
+      return;
+    }
+    task.completed = true;
+    await updateUserData({ tasks: tasks });
+    currentUser.tasks = tasks;
+    await addEarnings(task.reward, `Task: ${task.title}`);
+  }
+
+  // Request Withdrawal with 4 ads
+  async function requestWithdrawWithAds(amount, method, accountNumber) {
+    if (!currentUser) return;
+    if (amount > currentUser.withdrawable) {
+      showToast("Insufficient balance");
+      return false;
+    }
+    if (amount < 50) {
+      showToast("Minimum withdraw ₹50");
+      return false;
+    }
+    if (!accountNumber || accountNumber.trim() === "") {
+      showToast("Please enter account number");
+      return false;
+    }
+    
+    const adLimit = currentUser.adLimit || { used: 0, max: 20 };
+    const remainingAds = adLimit.max - adLimit.used;
+    if (remainingAds < 4) {
+      showToast(`You need to watch 4 verification ads. You have only ${remainingAds} ads left today.`);
+      return false;
+    }
+    
+    showToast("Starting withdrawal verification. Please watch 4 ads.");
+    
+    let currentAdIndex = 0;
+    const totalAds = 4;
+    
+    function showAdModal(resolve) {
+      const modal = document.createElement('div');
+      modal.className = 'ad-modal';
+      modal.innerHTML = `
+        <div class="ad-modal-content">
+          <div style="font-size: 48px; margin-bottom: 10px;">🏧</div>
+          <h3>Withdrawal Verification</h3>
+          <div class="ad-counter">Ad ${currentAdIndex + 1} of ${totalAds}</div>
+          <div class="ad-progress">
+            <div class="ad-progress-fill" style="width: ${(currentAdIndex / totalAds) * 100}%"></div>
+          </div>
+          <p style="margin: 10px 0; color: var(--text-gray);">Watch ${totalAds} ads to complete your withdrawal request</p>
+          <button class="close-modal-btn" id="verifyAdBtn">Watch Ad ${currentAdIndex + 1}</button>
+        </div>
+      `;
+      
+      document.body.appendChild(modal);
+      
+      const watchBtn = document.getElementById('verifyAdBtn');
+      if (watchBtn) {
+        watchBtn.onclick = async () => {
+          modal.remove();
+          showMonetagAd(async (success) => {
+            if (success) {
+              currentAdIndex++;
+              const newAdLimit = { ...adLimit, used: adLimit.used + 1 };
+              await updateUserData({ adLimit: newAdLimit });
+              adLimit.used++;
+              currentUser.adLimit = newAdLimit;
+              
+              if (currentAdIndex >= totalAds) {
+                resolve(true);
+              } else {
+                showAdModal(resolve);
+              }
+            } else {
+              showToast("Ad failed to load. Please try again.");
+              resolve(false);
+            }
+          });
+        };
+      }
+    }
+    
+    const success = await new Promise((resolve) => {
+      showAdModal(resolve);
+    });
+    
+    if (success) {
+      const newWithdrawable = currentUser.withdrawable - amount;
+      const newTotalBalance = currentUser.totalBalance - amount;
+      
+      await updateUserData({
+        withdrawable: newWithdrawable,
+        totalBalance: newTotalBalance
+      });
+      
+      const withdrawal = {
+        amount: amount,
+        status: "Completed",
+        date: new Date().toLocaleDateString(),
+        method: method,
+        accountNumber: accountNumber,
+        timestamp: Date.now()
+      };
+      
+      await database.ref(`users/${userId}/withdrawals`).push(withdrawal);
+      await addTransaction(`Withdraw to ${method} (${accountNumber})`, -amount);
+      
+      currentUser.withdrawable = newWithdrawable;
+      currentUser.totalBalance = newTotalBalance;
+      if (!currentUser.withdrawals) currentUser.withdrawals = [];
+      currentUser.withdrawals.unshift(withdrawal);
+      
+      showToast(`✅ Withdrawal of ₹${amount} to ${method} has been processed successfully!`);
+      render();
+    }
+    return success;
+  }
+
+  // Leaderboard Data
+  const topEarnersData = [
+    { name: "Rakib Hasan", amount: 15750.80, rank: 1 },
+    { name: "Shohan Ahmed", amount: 12850.60, rank: 2 },
+    { name: "Jannat Islam", amount: 10250.30, rank: 3 },
+    { name: "Mim Akter", amount: 8750.20, rank: 4 }
+  ];
+
+  const referralLeaderboardData = [
+    { name: "Rakib Hasan", amount: 5250.30, rank: 1 },
+    { name: "Shohan Ahmed", amount: 4250.10, rank: 2 },
+    { name: "Jannat Islam", amount: 3150.20, rank: 3 }
+  ];
+
+  // Initialize User in Firebase
+  async function initUser() {
+    const telegramUser = tg?.initDataUnsafe?.user;
+    const uid = telegramUser?.id?.toString() || `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    userId = uid;
+    
+    const userRef = database.ref(`users/${userId}`);
+    const snapshot = await userRef.once('value');
+    const userData = snapshot.val();
+    
+    if (!userData) {
+      // New user - create default data
+      const defaultUser = {
+        name: telegramUser?.first_name || "Rakib Hasan",
+        level: 12,
+        totalBalance: 1590.50,
+        withdrawable: 1200.30,
+        todayEarnings: 120.50,
+        totalEarnings: 15750.80,
+        adsWatched: 120,
+        dailyStreak: 7,
+        referralCount: 5,
+        referralEarnings: 250.0,
+        referralLink: `https://t.me/infiniiearn_bot?start=${userId}`,
+        adLimit: { used: 5, max: 20 },
+        tasks: [
+          { id: 1, title: "Follow on Twitter", reward: 2.00, completed: false, icon: "🐦" },
+          { id: 2, title: "Join Telegram Channel", reward: 3.00, completed: false, icon: "📢" },
+          { id: 3, title: "Visit Website", reward: 1.50, completed: false, icon: "🌐" }
+        ],
+        dailyBonusClaimed: false,
+        transactions: [],
+        withdrawals: []
+      };
+      await userRef.set(defaultUser);
+      currentUser = defaultUser;
+    } else {
+      currentUser = userData;
+      if (!currentUser.tasks) {
+        currentUser.tasks = [
+          { id: 1, title: "Follow on Twitter", reward: 2.00, completed: false, icon: "🐦" },
+          { id: 2, title: "Join Telegram Channel", reward: 3.00, completed: false, icon: "📢" },
+          { id: 3, title: "Visit Website", reward: 1.50, completed: false, icon: "🌐" }
+        ];
+      }
+      if (!currentUser.withdrawals) currentUser.withdrawals = [];
+      if (!currentUser.recentTransactions) currentUser.recentTransactions = [];
+      if (!currentUser.adLimit) currentUser.adLimit = { used: 5, max: 20 };
+    }
+    render();
+  }
+
+  // Render Functions
+  function renderDashboard() {
+    const remainingAds = (currentUser.adLimit?.max || 20) - (currentUser.adLimit?.used || 0);
+    
+    return `
+      <div class="page">
+        <div class="balance-card">
+          <div class="balance-label">Total Balance</div>
+          <div class="balance-amount">₹${(currentUser.totalBalance || 0).toFixed(2)}</div>
+          <div class="balance-stats">
+            <div class="balance-stat">
+              <div class="balance-stat-value">₹${(currentUser.withdrawable || 0).toFixed(2)}</div>
+              <div class="balance-stat-label">Withdrawable</div>
+            </div>
+            <div class="balance-stat">
+              <div class="balance-stat-value">₹${(currentUser.todayEarnings || 0).toFixed(2)}</div>
+              <div class="balance-stat-label">Today's Earnings</div>
+            </div>
+            <div class="balance-stat">
+              <div class="balance-stat-value">₹${(currentUser.totalEarnings || 0).toFixed(2)}</div>
+              <div class="balance-stat-label">Total Earnings</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📺</div>
+            <div class="stat-title">Ads Watched</div>
+            <div class="stat-number">${currentUser.adsWatched || 0}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🔥</div>
+            <div class="stat-title">Daily Streak</div>
+            <div class="stat-number">${currentUser.dailyStreak || 7} Days</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">👥</div>
+            <div class="stat-title">Referral Earnings</div>
+            <div class="stat-number">₹${(currentUser.referralEarnings || 0).toFixed(2)}</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">⭐</div>
+            <div class="stat-title">Available Ads</div>
+            <div class="stat-number">${remainingAds}/${currentUser.adLimit?.max || 20}</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">
+            <div class="section-title">Watch Ads</div>
+            <div class="section-link">Resets in 05:45:30</div>
+          </div>
+          <div class="ads-card">
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${((currentUser.adLimit?.used || 0) / (currentUser.adLimit?.max || 20)) * 100}%"></div>
+            </div>
+            <div class="ad-button" id="watchAdsBtn">
+              <div class="ad-button-info">
+                <div class="ad-button-title">Watch 3 Ads Bundle</div>
+                <div class="ad-button-price">+30 Points</div>
+                <div class="ad-button-sub">Watch 3 ads and earn 30 points instantly!</div>
+              </div>
+              <div class="watch-btn-large">Watch Now</div>
+            </div>
+            <div class="ad-warning">
+              ⚡ Each ad view gives you points. Complete all 3 ads to get 30 points!
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-header">
+            <div class="section-title">🏆 Top Earners</div>
+          </div>
+          <div class="leaderboard-list">
+            ${topEarnersData.map(item => `
+              <div class="leaderboard-item">
+                <div class="rank rank-${item.rank === 1 ? '1' : (item.rank === 2 ? '2' : (item.rank === 3 ? '3' : ''))}">${item.rank}</div>
+                <div class="leaderboard-name">${item.name}</div>
+                <div class="leaderboard-amount">₹${item.amount.toFixed(2)}</div>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderTasks() {
+    const bonusStatus = currentUser.dailyBonusClaimed ? "✅ Claimed Today" : "🎁 Available";
+    const bonusColor = currentUser.dailyBonusClaimed ? "var(--green)" : "var(--blue-primary)";
+    
+    return `
+      <div class="page">
+        <div class="section">
+          <div class="section-title">🎯 Tasks Center</div>
+        </div>
+        ${(currentUser.tasks || []).map(task => `
+          <div class="ads-card" style="margin: 0 16px 12px 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <span style="font-size: 28px;">${task.icon}</span>
+                <span style="font-weight: 600; margin-left: 12px;">${task.title}</span>
+                <div style="font-size: 13px; color: var(--green); margin-top: 4px;">+₹${task.reward}</div>
+              </div>
+              ${task.completed ? 
+                '<span style="color: var(--green);">✅ Completed</span>' : 
+                `<button class="task-btn" data-task-id="${task.id}">Complete</button>`
+              }
+            </div>
+          </div>
+        `).join('')}
+        
+        <div class="ads-card" style="margin: 0 16px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div><strong>🎁 Daily Bonus</strong></div>
+            <div style="color: ${bonusColor}; font-size: 13px; font-weight: 500;">${bonusStatus}</div>
+          </div>
+          <div style="background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 16px; padding: 16px; margin-top: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="color: white;">
+                <div style="font-weight: 700; font-size: 18px;">Watch 4 Ads</div>
+                <div style="font-size: 24px; font-weight: 800;">+10 Points</div>
+                <div style="font-size: 11px; opacity: 0.9;">Watch 4 Monetag ads to earn bonus!</div>
+              </div>
+              ${!currentUser.dailyBonusClaimed ? 
+                `<button id="dailyBonusBtn" style="background: white; color: #d97706; border: none; padding: 10px 24px; border-radius: 40px; font-weight: 700; cursor: pointer;">Claim</button>` :
+                `<div style="background: rgba(255,255,255,0.3); padding: 10px 20px; border-radius: 40px; color: white;">Claimed</div>`
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderWallet() {
+    const transactions = currentUser.recentTransactions || [];
+    return `
+      <div class="page">
+        <div class="balance-card">
+          <div class="balance-label">Available Balance</div>
+          <div class="balance-amount">₹${(currentUser.withdrawable || 0).toFixed(2)}</div>
+          <div class="balance-stats">
+            <div class="balance-stat">
+              <div class="balance-stat-value">₹${((currentUser.totalBalance || 0) - (currentUser.withdrawable || 0)).toFixed(2)}</div>
+              <div class="balance-stat-label">Pending</div>
+            </div>
+            <div class="balance-stat">
+              <div class="balance-stat-value">₹${(currentUser.totalEarnings || 0).toFixed(2)}</div>
+              <div class="balance-stat-label">Total Earned</div>
+            </div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">Transaction History</div>
+        </div>
+        <div class="leaderboard-list" style="margin: 0 16px;">
+          ${transactions.slice(0, 5).map(tx => `
+            <div class="leaderboard-item">
+              <div class="leaderboard-name">${tx.type}</div>
+              <div class="leaderboard-amount" style="color: ${tx.amount > 0 ? '#10b981' : '#ef4444'}">
+                ${tx.amount > 0 ? `+₹${tx.amount.toFixed(2)}` : `-₹${Math.abs(tx.amount).toFixed(2)}`}
+              </div>
+              <div style="font-size: 11px; color: var(--text-gray);">${new Date(tx.date).toLocaleDateString()}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderWithdraw() {
+    const withdrawals = currentUser.withdrawals || [];
+    return `
+      <div class="page">
+        <div class="balance-card">
+          <div class="balance-label">Withdrawable Balance</div>
+          <div class="balance-amount">₹${(currentUser.withdrawable || 0).toFixed(2)}</div>
+          <div class="ad-warning" style="margin-top: 12px;">
+            🎬 Note: Withdrawal requires watching 4 verification ads (Monetag Ad Zone)
+          </div>
+        </div>
+        <div class="ads-card" style="margin: 0 16px;">
+          <div style="margin-bottom: 16px;">
+            <label>Amount (Min ₹50)</label>
+            <input type="number" id="withdrawAmount" placeholder="Enter amount">
+            <label>Account Number</label>
+            <input type="text" id="accountNumber" placeholder="Enter your account number">
+            <label>Payment Method</label>
+            <select id="withdrawMethod">
+              <option value="bKash">bKash</option>
+              <option value="Nagad">Nagad</option>
+              <option value="Rocket">Rocket</option>
+              <option value="Binance Pay">Binance Pay</option>
+            </select>
+            <button id="submitWithdraw" class="btn-primary">Request Withdrawal (Watch 4 Ads)</button>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-title">Withdrawal History</div>
+        </div>
+        <div class="leaderboard-list" style="margin: 0 16px;">
+          ${withdrawals.map(w => `
+            <div class="leaderboard-item">
+              <div class="leaderboard-name">${w.method} - ${w.accountNumber}</div>
+              <div style="color: ${w.status === 'Completed' ? '#10b981' : '#f59e0b'}; font-weight: 500;">${w.status}</div>
+              <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                <div>₹${w.amount}</div>
+                <div style="font-size: 10px; color: var(--text-gray);">${w.date}</div>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderReferral() {
+    return `
+      <div class="page">
+        <div class="balance-card">
+          <div class="balance-label">Referral Earnings</div>
+          <div class="balance-amount">₹${(currentUser.referralEarnings || 0).toFixed(2)}</div>
+          <div class="balance-stats">
+            <div class="balance-stat">
+              <div class="balance-stat-value">${currentUser.referralCount || 5}</div>
+              <div class="balance-stat-label">Total Referrals</div>
+            </div>
+          </div>
+        </div>
+        <div class="referral-card" style="margin: 0 16px;">
+          <div class="referral-link-box">
+            <span style="font-size: 11px; font-family: monospace;">${currentUser.referralLink || "https://t.me/infiniiearn_bot"}</span>
+            <button class="copy-btn" id="copyLinkBtn2">Copy</button>
+          </div>
+          <button class="btn-primary" id="inviteBtn">Invite Friends</button>
+        </div>
+        <div class="section">
+          <div class="section-title">Referral Leaderboard</div>
+        </div>
+        <div class="leaderboard-list" style="margin: 0 16px;">
+          ${referralLeaderboardData.map(item => `
+            <div class="leaderboard-item">
+              <div class="rank rank-${item.rank === 1 ? '1' : (item.rank === 2 ? '2' : '3')}">${item.rank}</div>
+              <div class="leaderboard-name">${item.name}</div>
+              <div class="leaderboard-amount">₹${item.amount.toFixed(2)}</div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderProfile() {
+    return `
+      <div class="page">
+        <div class="balance-card">
+          <div style="display: flex; align-items: center; gap: 16px;">
+            <div class="avatar">${(currentUser.name || "R").charAt(0)}</div>
+            <div>
+              <div style="font-size: 20px; font-weight: 700;">${currentUser.name || "Rakib Hasan"}</div>
+              <div class="level-badge" style="display: inline-block;">Level ${currentUser.level || 12}</div>
+            </div>
+          </div>
+          <div class="balance-stats" style="margin-top: 20px;">
+            <div class="balance-stat">
+              <div class="balance-stat-value">${currentUser.dailyStreak || 7} Days</div>
+              <div class="balance-stat-label">Streak</div>
+            </div>
+            <div class="balance-stat">
+              <div class="balance-stat-value">${currentUser.adsWatched || 0}</div>
+              <div class="balance-stat-label">Ads Watched</div>
+            </div>
+          </div>
+        </div>
+        <div class="ads-card" style="margin: 0 16px;">
+          <div><strong>Account Status</strong>: Active ✅</div>
+          <div style="margin-top: 8px;"><strong>Join Date</strong>: ${new Date().toLocaleDateString()}</div>
+          <button id="darkModeToggle" class="btn-primary" style="margin-top: 16px;">🌓 Dark / Light Mode</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function render() {
+    if (!currentUser) return;
+    
+    const app = document.getElementById('app');
+    let content = "";
+    
+    switch(currentPage) {
+      case "dashboard": content = renderDashboard(); break;
+      case "tasks": content = renderTasks(); break;
+      case "wallet": content = renderWallet(); break;
+      case "withdraw": content = renderWithdraw(); break;
+      case "referral": content = renderReferral(); break;
+      case "profile": content = renderProfile(); break;
+      default: content = renderDashboard();
+    }
+
+    const navHtml = `
+      <div class="bottom-nav">
+        <button class="nav-item ${currentPage === 'dashboard' ? 'active' : ''}" data-page="dashboard"><span class="nav-icon">🏠</span><span>Home</span></button>
+        <button class="nav-item ${currentPage === 'tasks' ? 'active' : ''}" data-page="tasks"><span class="nav-icon">🎯</span><span>Tasks</span></button>
+        <button class="nav-item ${currentPage === 'wallet' ? 'active' : ''}" data-page="wallet"><span class="nav-icon">💰</span><span>Wallet</span></button>
+        <button class="nav-item ${currentPage === 'withdraw' ? 'active' : ''}" data-page="withdraw"><span class="nav-icon">🏧</span><span>Withdraw</span></button>
+        <button class="nav-item ${currentPage === 'referral' ? 'active' : ''}" data-page="referral"><span class="nav-icon">👥</span><span>Refer</span></button>
+        <button class="nav-item ${currentPage === 'profile' ? 'active' : ''}" data-page="profile"><span class="nav-icon">👤</span><span>Profile</span></button>
+      </div>
+    `;
+
+    app.innerHTML = `
+      <div class="header">
+        <div class="header-top">
+          <div class="logo-section">
+            <h1>💰 Infinity Earn</h1>
+            <p>Earn Money Watching Ads</p>
+          </div>
+          <div class="user-info">
+            <span class="level-badge">Level ${currentUser.level || 12}</span>
+            <div class="avatar">${(currentUser.name || "R").charAt(0)}</div>
+          </div>
+        </div>
+      </div>
+      ${content}
+      ${navHtml}
+    `;
+
+    // Bind Events
+    document.querySelectorAll('.nav-item').forEach(btn => {
+      btn.addEventListener('click', () => {
+        currentPage = btn.dataset.page;
+        render();
+        if (tg) tg.HapticFeedback?.impactOccurred('soft');
+      });
+    });
+
+    const watchAdsBtn = document.getElementById('watchAdsBtn');
+    if (watchAdsBtn) watchAdsBtn.addEventListener('click', () => startWatchingAds());
+
+    const dailyBonusBtn = document.getElementById('dailyBonusBtn');
+    if (dailyBonusBtn) dailyBonusBtn.addEventListener('click', () => startDailyBonus());
+
+    document.querySelectorAll('[data-task-id]').forEach(btn => {
+      const taskId = parseInt(btn.dataset.taskId);
+      if (taskId) btn.addEventListener('click', () => completeTask(taskId));
+    });
+
+    const copyBtn2 = document.getElementById('copyLinkBtn2');
+    if (copyBtn2) copyBtn2.onclick = () => { 
+      navigator.clipboard.writeText(currentUser.referralLink || "https://t.me/infiniiearn_bot"); 
+      showToast("Link copied!"); 
+    };
+    
+    const withdrawBtn = document.getElementById('submitWithdraw');
+    if (withdrawBtn) withdrawBtn.onclick = () => {
+      const amount = parseFloat(document.getElementById('withdrawAmount')?.value);
+      const method = document.getElementById('withdrawMethod')?.value;
+      const accountNumber = document.getElementById('accountNumber')?.value;
+      if (amount && method && accountNumber) {
+        requestWithdrawWithAds(amount, method, accountNumber);
+      } else if (!accountNumber) {
+        showToast("Please enter account number");
+      } else if (!amount) {
+        showToast("Please enter amount");
+      }
+    };
+    
+    const inviteBtn = document.getElementById('inviteBtn');
+    if (inviteBtn) inviteBtn.onclick = () => { 
+      navigator.clipboard.writeText(currentUser.referralLink || "https://t.me/infiniiearn_bot"); 
+      showToast("Referral link copied! Share with friends."); 
+    };
+  }
+
+  // Dark Mode
+  function initTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') document.body.classList.add('dark');
+    document.addEventListener('click', (e) => {
+      if (e.target.id === 'darkModeToggle') {
+        document.body.classList.toggle('dark');
+        localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+      }
+    });
+  }
+  
+  initTheme();
+  initUser();
+</script>
+</body>
+</html>
