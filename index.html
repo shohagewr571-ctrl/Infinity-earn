@@ -8,6 +8,8 @@
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+  <!-- Monetag Ad SDK -->
+  <script src='//libtl.com/sdk.js' data-zone='11129283' data-sdk='show_11129283'></script>
   <style>
     * {
       margin: 0;
@@ -50,7 +52,6 @@
       position: relative;
     }
 
-    /* Header */
     .header {
       background: var(--bg-white);
       padding: 16px 20px;
@@ -451,16 +452,16 @@
 </div>
 
 <script>
-  // Firebase Configuration
+  // Firebase Configuration - আপনার দেওয়া কনফিগ
   const firebaseConfig = {
-    apiKey: "AIzaSyB8leAjKEjUJAtF5TE43EO-HduxwpCSxIU",
-    authDomain: "infinity-earn-286dc.firebaseapp.com",
-    databaseURL: "https://infinity-earn-286dc-default-rtdb.firebaseio.com",
-    projectId: "infinity-earn-286dc",
-    storageBucket: "infinity-earn-286dc.firebasestorage.app",
-    messagingSenderId: "552917641589",
-    appId: "1:552917641589:web:a5a7b6c39ebc5959a38b3cf"
-  };
+  apiKey: "AIzaSyB8leAjKEjUJAtF5TE43EO-HduxwpCSxIU",
+  authDomain: "infinity-earn-286dc.firebaseapp.com",
+  databaseURL: "https://infinity-earn-286dc-default-rtdb.firebaseio.com",
+  projectId: "infinity-earn-286dc",
+  storageBucket: "infinity-earn-286dc.firebasestorage.app",
+  messagingSenderId: "552917641589",
+  appId: "1:552917641589:web:a5a7b6c39ebc5959a38b3c",
+};
 
   // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
@@ -481,23 +482,32 @@
 
   // Load Settings from Firebase
   async function loadSettings() {
-    const settingsRef = database.ref('settings');
-    const snapshot = await settingsRef.once('value');
-    if (snapshot.exists()) {
-      globalSettings = snapshot.val();
-    } else {
-      // Default settings
+    try {
+      const settingsRef = database.ref('settings');
+      const snapshot = await settingsRef.once('value');
+      if (snapshot.exists()) {
+        globalSettings = snapshot.val();
+      } else {
+        globalSettings = {
+          adReward: 30,
+          dailyAdLimit: 20,
+          adsPerBundle: 3,
+          minWithdraw: 50,
+          dailyBonusReward: 10,
+          dailyBonusAds: 4,
+          signupBonus: 10,
+          referralBonus: 25
+        };
+        await settingsRef.set(globalSettings);
+      }
+    } catch (error) {
+      console.error("Settings load error:", error);
+      // Fallback settings
       globalSettings = {
-        adReward: 30,
-        dailyAdLimit: 20,
-        adsPerBundle: 3,
-        minWithdraw: 50,
-        dailyBonusReward: 10,
-        dailyBonusAds: 4,
-        signupBonus: 10,
-        referralBonus: 25
+        adReward: 30, dailyAdLimit: 20, adsPerBundle: 3,
+        minWithdraw: 50, dailyBonusReward: 10, dailyBonusAds: 4,
+        signupBonus: 10, referralBonus: 25
       };
-      await settingsRef.set(globalSettings);
     }
     return globalSettings;
   }
@@ -511,71 +521,74 @@
     if (tg) tg.HapticFeedback?.impactOccurred('light');
   }
 
-  // Monetag Ad Show
+  // Real Monetag Ad Show Function
   function showMonetagAd(callback) {
-    const adContainer = document.createElement('div');
-    adContainer.style.position = 'fixed';
-    adContainer.style.top = '0';
-    adContainer.style.left = '0';
-    adContainer.style.right = '0';
-    adContainer.style.bottom = '0';
-    adContainer.style.zIndex = '2000';
-    adContainer.style.backgroundColor = 'rgba(0,0,0,0.95)';
-    adContainer.style.display = 'flex';
-    adContainer.style.alignItems = 'center';
-    adContainer.style.justifyContent = 'center';
-    
-    const adInner = document.createElement('div');
-    adInner.style.width = '100%';
-    adInner.style.maxWidth = '400px';
-    adInner.style.backgroundColor = '#fff';
-    adInner.style.borderRadius = '20px';
-    adInner.style.padding = '20px';
-    adInner.style.textAlign = 'center';
-    
-    adInner.innerHTML = `
-      <div style="margin-bottom: 20px;">
+    const modal = document.createElement('div');
+    modal.className = 'ad-modal';
+    modal.innerHTML = `
+      <div class="ad-modal-content">
         <div style="font-size: 48px; margin-bottom: 10px;">🎬</div>
-        <h3 style="margin-bottom: 10px;">Monetag Ad</h3>
-        <p style="color: #666; margin-bottom: 20px;">Watch this ad to earn rewards</p>
-        <div style="width: 100%; height: 4px; background: #e0e0e0; border-radius: 2px; overflow: hidden; margin-bottom: 20px;">
-          <div id="adProgressFill" style="width: 0%; height: 100%; background: #3b82f6;"></div>
-        </div>
-        <div style="font-size: 14px; color: #888;" id="adStatusText">Ad loading...</div>
+        <h3>Monetag Ad</h3>
+        <p style="margin: 10px 0; color: var(--text-gray);">Please watch this ad to continue</p>
+        <div id="monetag-ad-container" style="min-height: 250px; margin: 16px 0;"></div>
+        <div style="font-size: 12px; color: var(--text-gray);">Ad will close automatically after completion</div>
       </div>
     `;
     
-    adContainer.appendChild(adInner);
-    document.body.appendChild(adContainer);
+    document.body.appendChild(modal);
     
-    let progress = 0;
-    const interval = setInterval(() => {
-      progress += 20;
-      const fill = document.getElementById('adProgressFill');
-      const statusText = document.getElementById('adStatusText');
-      if (fill) fill.style.width = progress + '%';
-      if (statusText) statusText.innerText = `Watching ad... ${progress}%`;
-      
-      if (progress >= 100) {
-        clearInterval(interval);
+    const adContainer = document.getElementById('monetag-ad-container');
+    if (adContainer && typeof show_11129283 !== 'undefined') {
+      try {
+        show_11129283(adContainer);
+      } catch(e) {
+        console.error("Ad load error:", e);
         setTimeout(() => {
-          adContainer.remove();
+          modal.remove();
           if (callback) callback(true);
-        }, 500);
+        }, 5000);
+        return;
       }
-    }, 800);
+    } else {
+      setTimeout(() => {
+        modal.remove();
+        if (callback) callback(true);
+      }, 5000);
+      return;
+    }
     
-    const script = document.createElement('script');
-    script.src = `https://monetag.io/static/legacy/legacy_ng_ads.js`;
-    script.async = true;
-    document.head.appendChild(script);
+    let adCompleted = false;
+    setTimeout(() => {
+      if (!adCompleted) {
+        adCompleted = true;
+        modal.remove();
+        if (callback) callback(true);
+      }
+    }, 10000);
+    
+    const closeBtn = document.createElement('button');
+    closeBtn.innerText = 'Close Ad';
+    closeBtn.style.cssText = 'background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 40px; margin-top: 16px; cursor: pointer; width: 100%;';
+    closeBtn.onclick = () => {
+      if (!adCompleted) {
+        adCompleted = true;
+        modal.remove();
+        if (callback) callback(true);
+      }
+    };
+    modal.querySelector('.ad-modal-content').appendChild(closeBtn);
   }
 
   // Update User Data in Firebase
   async function updateUserData(data) {
     if (!userId) return;
-    await database.ref(`users/${userId}`).update(data);
-    if (currentUser) Object.assign(currentUser, data);
+    try {
+      await database.ref(`users/${userId}`).update(data);
+      if (currentUser) Object.assign(currentUser, data);
+    } catch (error) {
+      console.error("Firebase update error:", error);
+      if (currentUser) Object.assign(currentUser, data);
+    }
   }
 
   // Add Transaction
@@ -587,7 +600,14 @@
       date: new Date().toLocaleString(),
       timestamp: Date.now()
     };
-    await database.ref(`users/${userId}/transactions`).push(transaction);
+    try {
+      await database.ref(`users/${userId}/transactions`).push(transaction);
+    } catch(e) { console.error(e); }
+    if (currentUser) {
+      if (!currentUser.transactions) currentUser.transactions = [];
+      currentUser.transactions.unshift(transaction);
+      if (currentUser.transactions.length > 20) currentUser.transactions.pop();
+    }
   }
 
   // Add Earnings
@@ -611,12 +631,11 @@
     render();
   }
 
-  // Watch Ads Bundle (using settings)
+  // Watch 3 Ads Bundle
   async function startWatchingAds() {
     if (!currentUser || !globalSettings) return;
-    const adLimit = currentUser.adLimit || { used: 0, max: globalSettings.dailyAdLimit };
-    if (adLimit.used + globalSettings.adsPerBundle > adLimit.max) {
-      const remaining = adLimit.max - adLimit.used;
+    if (currentUser.adLimit.used + globalSettings.adsPerBundle > currentUser.adLimit.max) {
+      const remaining = currentUser.adLimit.max - currentUser.adLimit.used;
       if (remaining <= 0) {
         showToast("Daily ad limit reached! Come back tomorrow.");
         return;
@@ -641,7 +660,7 @@
             <div style="width:${(currentAdIndex / totalAds) * 100}%; height:100%; background:#3b82f6; border-radius:3px;"></div>
           </div>
           <p style="margin: 10px 0; color: var(--text-gray);">Complete all ${totalAds} ads to earn ${rewardAmount} points!</p>
-          <button class="watch-btn-large" id="watchBundleAdBtn" style="background:#3b82f6; color:white;">Watch Ad Now</button>
+          <button class="watch-btn-large" id="watchBundleAdBtn" style="background:#3b82f6; color:white;">Watch Ad ${currentAdIndex + 1}</button>
         </div>
       `;
       
@@ -654,15 +673,16 @@
           showMonetagAd(async (success) => {
             if (success) {
               currentAdIndex++;
-              const newAdLimit = { ...adLimit, used: adLimit.used + 1 };
+              const newAdLimit = { ...currentUser.adLimit, used: currentUser.adLimit.used + 1 };
               await updateUserData({ adLimit: newAdLimit });
-              adLimit.used++;
+              currentUser.adLimit.used++;
               
               if (currentAdIndex >= totalAds) {
-                await addEarnings(rewardAmount, `${totalAds} Ads Bundle (${rewardAmount} points)`);
+                await addEarnings(rewardAmount, `${totalAds} Ads Bundle`);
                 const newAdsWatched = (currentUser.adsWatched || 0) + totalAds;
                 await updateUserData({ adsWatched: newAdsWatched });
-                showToast(`🎉 Congratulations! You earned ${rewardAmount} points!`);
+                currentUser.adsWatched = newAdsWatched;
+                showToast(`🎉 You earned ${rewardAmount} points!`);
               } else {
                 showAdModal();
               }
@@ -681,18 +701,17 @@
   async function startDailyBonus() {
     if (!currentUser || !globalSettings) return;
     if (currentUser.dailyBonusClaimed) {
-      showToast("You've already claimed today's daily bonus! Come back tomorrow.");
+      showToast("Already claimed today's bonus!");
       return;
     }
     
-    const adLimit = currentUser.adLimit || { used: 0, max: globalSettings.dailyAdLimit };
-    if (adLimit.used + globalSettings.dailyBonusAds > adLimit.max) {
-      const remaining = adLimit.max - adLimit.used;
+    if (currentUser.adLimit.used + globalSettings.dailyBonusAds > currentUser.adLimit.max) {
+      const remaining = currentUser.adLimit.max - currentUser.adLimit.used;
       if (remaining <= 0) {
-        showToast("Daily ad limit reached! Come back tomorrow.");
+        showToast("Daily ad limit reached!");
         return;
       }
-      showToast(`You can only watch ${remaining} more ads today.`);
+      showToast(`Only ${remaining} ads left today.`);
       return;
     }
     
@@ -712,7 +731,7 @@
             <div style="width:${(currentAdIndex / totalAds) * 100}%; height:100%; background:#f59e0b; border-radius:3px;"></div>
           </div>
           <p style="margin: 10px 0;">Watch all ${totalAds} ads to earn ${bonusReward} points!</p>
-          <button class="watch-btn-large" id="bonusAdBtn" style="background:#f59e0b; color:white;">Watch Ad Now</button>
+          <button class="watch-btn-large" id="bonusAdBtn" style="background:#f59e0b; color:white;">Watch Ad ${currentAdIndex + 1}</button>
         </div>
       `;
       
@@ -725,9 +744,9 @@
           showMonetagAd(async (success) => {
             if (success) {
               currentAdIndex++;
-              const newAdLimit = { ...adLimit, used: adLimit.used + 1 };
+              const newAdLimit = { ...currentUser.adLimit, used: currentUser.adLimit.used + 1 };
               await updateUserData({ adLimit: newAdLimit });
-              adLimit.used++;
+              currentUser.adLimit.used++;
               
               if (currentAdIndex >= totalAds) {
                 await addEarnings(bonusReward, "Daily Bonus");
@@ -736,12 +755,14 @@
                   adsWatched: newAdsWatched,
                   dailyBonusClaimed: true 
                 });
+                currentUser.adsWatched = newAdsWatched;
+                currentUser.dailyBonusClaimed = true;
                 showToast(`🎉 You earned ${bonusReward} bonus points!`);
               } else {
                 showAdModal();
               }
             } else {
-              showToast("Ad failed to load. Please try again.");
+              showToast("Ad failed to load.");
             }
           });
         };
@@ -753,7 +774,6 @@
 
   // Complete Task
   async function completeTask(taskId) {
-    if (!currentUser) return;
     const tasks = currentUser.tasks || [];
     const task = tasks.find(t => t.id === taskId);
     if (!task || task.completed) {
@@ -762,6 +782,7 @@
     }
     task.completed = true;
     await updateUserData({ tasks: tasks });
+    currentUser.tasks = tasks;
     await addEarnings(task.reward, `Task: ${task.title}`);
   }
 
@@ -781,10 +802,9 @@
       return false;
     }
     
-    const adLimit = currentUser.adLimit || { used: 0, max: globalSettings.dailyAdLimit };
-    const remainingAds = adLimit.max - adLimit.used;
+    const remainingAds = currentUser.adLimit.max - currentUser.adLimit.used;
     if (remainingAds < 4) {
-      showToast(`Need 4 verification ads. Only ${remainingAds} left today.`);
+      showToast(`Need 4 verification ads. Only ${remainingAds} left.`);
       return false;
     }
     
@@ -812,14 +832,14 @@
       
       const watchBtn = document.getElementById('verifyAdBtn');
       if (watchBtn) {
-        watchBtn.onclick = async () => {
+        watchBtn.onclick = () => {
           modal.remove();
           showMonetagAd(async (success) => {
             if (success) {
               currentAdIndex++;
-              const newAdLimit = { ...adLimit, used: adLimit.used + 1 };
+              const newAdLimit = { ...currentUser.adLimit, used: currentUser.adLimit.used + 1 };
               await updateUserData({ adLimit: newAdLimit });
-              adLimit.used++;
+              currentUser.adLimit.used++;
               
               if (currentAdIndex >= totalAds) {
                 resolve(true);
@@ -855,13 +875,101 @@
         timestamp: Date.now()
       };
       
-      await database.ref(`users/${userId}/withdrawals`).push(withdrawal);
+      try {
+        await database.ref(`users/${userId}/withdrawals`).push(withdrawal);
+      } catch(e) {}
+      
+      if (!currentUser.withdrawals) currentUser.withdrawals = [];
+      currentUser.withdrawals.unshift(withdrawal);
       await addTransaction(`Withdraw to ${method}`, -amount);
+      
+      currentUser.withdrawable = newWithdrawable;
+      currentUser.totalBalance = newTotalBalance;
       
       showToast(`✅ Withdrawal of ₹${amount} processed!`);
       render();
     }
     return success;
+  }
+
+  // Initialize User from Firebase
+  async function initUser() {
+    await loadSettings();
+    
+    const telegramUser = tg?.initDataUnsafe?.user;
+    const uid = telegramUser?.id?.toString() || `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    userId = uid;
+    
+    try {
+      const userRef = database.ref(`users/${userId}`);
+      const snapshot = await userRef.once('value');
+      const userData = snapshot.val();
+      
+      if (!userData) {
+        currentUser = {
+          name: telegramUser?.first_name || "Rakib Hasan",
+          level: 1,
+          totalBalance: globalSettings.signupBonus,
+          withdrawable: globalSettings.signupBonus,
+          todayEarnings: globalSettings.signupBonus,
+          totalEarnings: globalSettings.signupBonus,
+          adsWatched: 0,
+          dailyStreak: 1,
+          referralCount: 0,
+          referralEarnings: 0,
+          referralLink: `https://t.me/infiniiearn_bot?start=${userId}`,
+          adLimit: { used: 0, max: globalSettings.dailyAdLimit },
+          tasks: [
+            { id: 1, title: "Follow on Twitter", reward: 2.00, completed: false, icon: "🐦" },
+            { id: 2, title: "Join Telegram Channel", reward: 3.00, completed: false, icon: "📢" },
+            { id: 3, title: "Visit Website", reward: 1.50, completed: false, icon: "🌐" }
+          ],
+          dailyBonusClaimed: false,
+          transactions: [{ type: "Signup Bonus", amount: globalSettings.signupBonus, date: new Date().toLocaleString() }],
+          withdrawals: []
+        };
+        await userRef.set(currentUser);
+        showToast(`Welcome! You got ₹${globalSettings.signupBonus} bonus!`);
+      } else {
+        currentUser = userData;
+        if (!currentUser.tasks) {
+          currentUser.tasks = [
+            { id: 1, title: "Follow on Twitter", reward: 2.00, completed: false, icon: "🐦" },
+            { id: 2, title: "Join Telegram Channel", reward: 3.00, completed: false, icon: "📢" },
+            { id: 3, title: "Visit Website", reward: 1.50, completed: false, icon: "🌐" }
+          ];
+        }
+        if (!currentUser.adLimit) currentUser.adLimit = { used: 0, max: globalSettings.dailyAdLimit };
+        if (!currentUser.transactions) currentUser.transactions = [];
+        if (!currentUser.withdrawals) currentUser.withdrawals = [];
+      }
+    } catch (error) {
+      console.error("Firebase init error, using fallback:", error);
+      // Fallback to local user
+      currentUser = {
+        name: telegramUser?.first_name || "Rakib Hasan",
+        level: 1,
+        totalBalance: 10,
+        withdrawable: 10,
+        todayEarnings: 10,
+        totalEarnings: 10,
+        adsWatched: 0,
+        dailyStreak: 1,
+        referralCount: 0,
+        referralEarnings: 0,
+        referralLink: `https://t.me/infiniiearn_bot?start=${userId}`,
+        adLimit: { used: 0, max: 20 },
+        tasks: [
+          { id: 1, title: "Follow on Twitter", reward: 2.00, completed: false, icon: "🐦" },
+          { id: 2, title: "Join Telegram Channel", reward: 3.00, completed: false, icon: "📢" },
+          { id: 3, title: "Visit Website", reward: 1.50, completed: false, icon: "🌐" }
+        ],
+        dailyBonusClaimed: false,
+        transactions: [],
+        withdrawals: []
+      };
+    }
+    render();
   }
 
   // Leaderboard Data
@@ -872,96 +980,42 @@
     { name: "Mim Akter", amount: 8750.20, rank: 4 }
   ];
 
-  // Initialize User in Firebase
-  async function initUser() {
-    await loadSettings();
-    
-    const telegramUser = tg?.initDataUnsafe?.user;
-    const uid = telegramUser?.id?.toString() || `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    userId = uid;
-    
-    const userRef = database.ref(`users/${userId}`);
-    const snapshot = await userRef.once('value');
-    const userData = snapshot.val();
-    
-    if (!userData) {
-      // New user
-      const defaultUser = {
-        name: telegramUser?.first_name || "Rakib Hasan",
-        level: 1,
-        totalBalance: globalSettings.signupBonus,
-        withdrawable: globalSettings.signupBonus,
-        todayEarnings: globalSettings.signupBonus,
-        totalEarnings: globalSettings.signupBonus,
-        adsWatched: 0,
-        dailyStreak: 1,
-        referralCount: 0,
-        referralEarnings: 0,
-        referralLink: `https://t.me/infiniiearn_bot?start=${userId}`,
-        adLimit: { used: 0, max: globalSettings.dailyAdLimit },
-        tasks: [
-          { id: 1, title: "Follow on Twitter", reward: 2.00, completed: false, icon: "🐦" },
-          { id: 2, title: "Join Telegram Channel", reward: 3.00, completed: false, icon: "📢" },
-          { id: 3, title: "Visit Website", reward: 1.50, completed: false, icon: "🌐" }
-        ],
-        dailyBonusClaimed: false,
-        transactions: [],
-        withdrawals: []
-      };
-      await userRef.set(defaultUser);
-      currentUser = defaultUser;
-      showToast(`Welcome! You got ₹${globalSettings.signupBonus} signup bonus!`);
-    } else {
-      currentUser = userData;
-    }
-    render();
-  }
-
   // Render Dashboard
   function renderDashboard() {
-    const remainingAds = (currentUser.adLimit?.max || globalSettings?.dailyAdLimit || 20) - (currentUser.adLimit?.used || 0);
+    const remainingAds = currentUser.adLimit.max - currentUser.adLimit.used;
     
     return `
       <div class="page">
         <div class="balance-card">
           <div class="balance-label">Total Balance</div>
-          <div class="balance-amount">₹${(currentUser.totalBalance || 0).toFixed(2)}</div>
+          <div class="balance-amount">₹${currentUser.totalBalance.toFixed(2)}</div>
           <div class="balance-stats">
-            <div class="balance-stat">
-              <div class="balance-stat-value">₹${(currentUser.withdrawable || 0).toFixed(2)}</div>
-              <div class="balance-stat-label">Withdrawable</div>
-            </div>
-            <div class="balance-stat">
-              <div class="balance-stat-value">₹${(currentUser.todayEarnings || 0).toFixed(2)}</div>
-              <div class="balance-stat-label">Today's Earnings</div>
-            </div>
-            <div class="balance-stat">
-              <div class="balance-stat-value">₹${(currentUser.totalEarnings || 0).toFixed(2)}</div>
-              <div class="balance-stat-label">Total Earnings</div>
-            </div>
+            <div class="balance-stat"><div class="balance-stat-value">₹${currentUser.withdrawable.toFixed(2)}</div><div class="balance-stat-label">Withdrawable</div></div>
+            <div class="balance-stat"><div class="balance-stat-value">₹${currentUser.todayEarnings.toFixed(2)}</div><div class="balance-stat-label">Today's Earnings</div></div>
+            <div class="balance-stat"><div class="balance-stat-value">₹${currentUser.totalEarnings.toFixed(2)}</div><div class="balance-stat-label">Total Earnings</div></div>
           </div>
         </div>
 
         <div class="stats-grid">
-          <div class="stat-card"><div class="stat-icon">📺</div><div class="stat-title">Ads Watched</div><div class="stat-number">${currentUser.adsWatched || 0}</div></div>
-          <div class="stat-card"><div class="stat-icon">🔥</div><div class="stat-title">Daily Streak</div><div class="stat-number">${currentUser.dailyStreak || 7} Days</div></div>
-          <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-title">Referral Earnings</div><div class="stat-number">₹${(currentUser.referralEarnings || 0).toFixed(2)}</div></div>
-          <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-title">Available Ads</div><div class="stat-number">${remainingAds}/${currentUser.adLimit?.max || globalSettings?.dailyAdLimit || 20}</div></div>
+          <div class="stat-card"><div class="stat-icon">📺</div><div class="stat-title">Ads Watched</div><div class="stat-number">${currentUser.adsWatched}</div></div>
+          <div class="stat-card"><div class="stat-icon">🔥</div><div class="stat-title">Daily Streak</div><div class="stat-number">${currentUser.dailyStreak} Days</div></div>
+          <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-title">Referral Earnings</div><div class="stat-number">₹${currentUser.referralEarnings.toFixed(2)}</div></div>
+          <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-title">Available Ads</div><div class="stat-number">${remainingAds}/${currentUser.adLimit.max}</div></div>
         </div>
 
         <div class="section">
-          <div class="section-header"><div class="section-title">Watch Ads</div><div class="section-link">Resets in 05:45:30</div></div>
+          <div class="section-header"><div class="section-title">Watch Ads</div><div class="section-link">Resets at midnight</div></div>
           <div class="ads-card">
-            <div class="progress-bar"><div class="progress-fill" style="width: ${((currentUser.adLimit?.used || 0) / (currentUser.adLimit?.max || 20)) * 100}%"></div></div>
+            <div class="progress-bar"><div class="progress-fill" style="width: ${(currentUser.adLimit.used / currentUser.adLimit.max) * 100}%"></div></div>
             <div class="ad-button" id="watchAdsBtn">
               <div class="ad-button-info">
                 <div class="ad-button-title">Watch ${globalSettings?.adsPerBundle || 3} Ads Bundle</div>
                 <div class="ad-button-price">+${globalSettings?.adReward || 30} Points</div>
-                <div class="ad-button-sub">Watch and earn instantly!</div>
+                <div class="ad-button-sub">Watch Monetag ads and earn instantly!</div>
               </div>
               <div class="watch-btn-large">Watch Now</div>
             </div>
-            <div class="ad-warning">⚡ Complete all ads to get points!</div>
+            <div class="ad-warning">🎬 Powered by Monetag - Watch ads to earn points!</div>
           </div>
         </div>
 
@@ -987,7 +1041,7 @@
     return `
       <div class="page">
         <div class="section"><div class="section-title">🎯 Tasks Center</div></div>
-        ${(currentUser.tasks || []).map(task => `
+        ${currentUser.tasks.map(task => `
           <div class="ads-card" style="margin: 0 16px 12px 16px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <div>
@@ -1007,6 +1061,7 @@
               <div style="color: white;">
                 <div style="font-weight: 700;">Watch ${globalSettings?.dailyBonusAds || 4} Ads</div>
                 <div style="font-size: 20px; font-weight: 800;">+${globalSettings?.dailyBonusReward || 10} Points</div>
+                <div style="font-size: 11px;">Powered by Monetag</div>
               </div>
               ${!currentUser.dailyBonusClaimed ? 
                 `<button id="dailyBonusBtn" style="background: white; color: #d97706; border: none; padding: 10px 20px; border-radius: 40px; font-weight: 700;">Claim</button>` :
@@ -1020,22 +1075,19 @@
   }
 
   function renderWallet() {
-    const transactions = currentUser.transactions || [];
-    const recentTx = Array.isArray(transactions) ? transactions.slice(0, 5) : [];
-    
     return `
       <div class="page">
         <div class="balance-card">
           <div class="balance-label">Available Balance</div>
-          <div class="balance-amount">₹${(currentUser.withdrawable || 0).toFixed(2)}</div>
+          <div class="balance-amount">₹${currentUser.withdrawable.toFixed(2)}</div>
           <div class="balance-stats">
-            <div class="balance-stat"><div class="balance-stat-value">₹${((currentUser.totalBalance || 0) - (currentUser.withdrawable || 0)).toFixed(2)}</div><div class="balance-stat-label">Pending</div></div>
-            <div class="balance-stat"><div class="balance-stat-value">₹${(currentUser.totalEarnings || 0).toFixed(2)}</div><div class="balance-stat-label">Total Earned</div></div>
+            <div class="balance-stat"><div class="balance-stat-value">₹${(currentUser.totalBalance - currentUser.withdrawable).toFixed(2)}</div><div class="balance-stat-label">Pending</div></div>
+            <div class="balance-stat"><div class="balance-stat-value">₹${currentUser.totalEarnings.toFixed(2)}</div><div class="balance-stat-label">Total Earned</div></div>
           </div>
         </div>
         <div class="section"><div class="section-title">Transaction History</div></div>
         <div class="leaderboard-list" style="margin: 0 16px;">
-          ${recentTx.map(tx => `
+          ${(currentUser.transactions || []).slice(0, 5).map(tx => `
             <div class="leaderboard-item">
               <div class="leaderboard-name">${tx.type}</div>
               <div class="leaderboard-amount" style="color: ${tx.amount > 0 ? '#10b981' : '#ef4444'}">${tx.amount > 0 ? `+₹${tx.amount}` : `-₹${Math.abs(tx.amount)}`}</div>
@@ -1048,15 +1100,12 @@
   }
 
   function renderWithdraw() {
-    const withdrawals = currentUser.withdrawals || [];
-    const withdrawalsList = Array.isArray(withdrawals) ? withdrawals : [];
-    
     return `
       <div class="page">
         <div class="balance-card">
           <div class="balance-label">Withdrawable Balance</div>
-          <div class="balance-amount">₹${(currentUser.withdrawable || 0).toFixed(2)}</div>
-          <div class="ad-warning">🎬 Requires watching 4 verification ads</div>
+          <div class="balance-amount">₹${currentUser.withdrawable.toFixed(2)}</div>
+          <div class="ad-warning">🎬 Requires watching 4 Monetag verification ads</div>
         </div>
         <div class="ads-card" style="margin: 0 16px;">
           <label>Amount (Min ₹${globalSettings?.minWithdraw || 50})</label>
@@ -1071,10 +1120,10 @@
         </div>
         <div class="section"><div class="section-title">Withdrawal History</div></div>
         <div class="leaderboard-list" style="margin: 0 16px;">
-          ${withdrawalsList.map(w => `
+          ${(currentUser.withdrawals || []).map(w => `
             <div class="leaderboard-item">
               <div class="leaderboard-name">${w.method} - ${w.accountNumber}</div>
-              <div style="color: ${w.status === 'Completed' ? '#10b981' : '#f59e0b'}">${w.status || 'Pending'}</div>
+              <div style="color: ${w.status === 'Completed' ? '#10b981' : '#f59e0b'}">${w.status || 'Completed'}</div>
               <div>₹${w.amount}</div>
             </div>
           `).join('')}
@@ -1088,12 +1137,12 @@
       <div class="page">
         <div class="balance-card">
           <div class="balance-label">Referral Earnings</div>
-          <div class="balance-amount">₹${(currentUser.referralEarnings || 0).toFixed(2)}</div>
-          <div class="balance-stats"><div class="balance-stat"><div class="balance-stat-value">${currentUser.referralCount || 0}</div><div class="balance-stat-label">Total Referrals</div></div></div>
+          <div class="balance-amount">₹${currentUser.referralEarnings.toFixed(2)}</div>
+          <div class="balance-stats"><div class="balance-stat"><div class="balance-stat-value">${currentUser.referralCount}</div><div class="balance-stat-label">Total Referrals</div></div></div>
         </div>
         <div class="referral-card" style="margin: 0 16px;">
           <div class="referral-link-box">
-            <span style="font-size: 11px;">${currentUser.referralLink || ""}</span>
+            <span style="font-size: 11px;">${currentUser.referralLink}</span>
             <button class="copy-btn" id="copyLinkBtn2">Copy</button>
           </div>
           <button class="btn-primary" id="inviteBtn">Invite Friends</button>
@@ -1111,12 +1160,12 @@
       <div class="page">
         <div class="balance-card">
           <div style="display: flex; align-items: center; gap: 16px;">
-            <div class="avatar">${(currentUser.name || "R").charAt(0)}</div>
-            <div><div style="font-size: 20px; font-weight: 700;">${currentUser.name || "Rakib Hasan"}</div><div class="level-badge">Level ${currentUser.level || 1}</div></div>
+            <div class="avatar">${currentUser.name.charAt(0)}</div>
+            <div><div style="font-size: 20px; font-weight: 700;">${currentUser.name}</div><div class="level-badge">Level ${currentUser.level}</div></div>
           </div>
           <div class="balance-stats" style="margin-top: 20px;">
-            <div class="balance-stat"><div class="balance-stat-value">${currentUser.dailyStreak || 1} Days</div><div class="balance-stat-label">Streak</div></div>
-            <div class="balance-stat"><div class="balance-stat-value">${currentUser.adsWatched || 0}</div><div class="balance-stat-label">Ads Watched</div></div>
+            <div class="balance-stat"><div class="balance-stat-value">${currentUser.dailyStreak} Days</div><div class="balance-stat-label">Streak</div></div>
+            <div class="balance-stat"><div class="balance-stat-value">${currentUser.adsWatched}</div><div class="balance-stat-label">Ads Watched</div></div>
           </div>
         </div>
         <div class="ads-card" style="margin: 0 16px;">
@@ -1159,7 +1208,7 @@
       <div class="header">
         <div class="header-top">
           <div class="logo-section"><h1>💰 Infinity Earn</h1><p>Earn Money Watching Ads</p></div>
-          <div class="user-info"><span class="level-badge">Level ${currentUser.level || 1}</span><div class="avatar">${(currentUser.name || "R").charAt(0)}</div></div>
+          <div class="user-info"><span class="level-badge">Level ${currentUser.level}</span><div class="avatar">${currentUser.name.charAt(0)}</div></div>
         </div>
       </div>
       ${content}
@@ -1187,7 +1236,7 @@
     });
 
     const copyBtn2 = document.getElementById('copyLinkBtn2');
-    if (copyBtn2) copyBtn2.onclick = () => { navigator.clipboard.writeText(currentUser.referralLink || ""); showToast("Link copied!"); };
+    if (copyBtn2) copyBtn2.onclick = () => { navigator.clipboard.writeText(currentUser.referralLink); showToast("Link copied!"); };
     
     const withdrawBtn = document.getElementById('submitWithdraw');
     if (withdrawBtn) withdrawBtn.onclick = () => {
@@ -1204,7 +1253,7 @@
     };
     
     const inviteBtn = document.getElementById('inviteBtn');
-    if (inviteBtn) inviteBtn.onclick = () => { navigator.clipboard.writeText(currentUser.referralLink || ""); showToast("Link copied!"); };
+    if (inviteBtn) inviteBtn.onclick = () => { navigator.clipboard.writeText(currentUser.referralLink); showToast("Link copied!"); };
   }
 
   // Dark Mode
