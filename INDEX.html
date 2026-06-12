@@ -22,16 +22,10 @@
       --bg-gray: #f8f9fc;
       --text-dark: #1a1f36;
       --text-gray: #6b7280;
-      --text-light: #9ca3af;
       --blue-primary: #3b82f6;
-      --blue-dark: #2563eb;
       --green: #10b981;
       --orange: #f59e0b;
-      --red: #ef4444;
-      --purple: #8b5cf6;
       --border: #e5e7eb;
-      --shadow: 0 1px 3px rgba(0,0,0,0.05);
-      --shadow-lg: 0 10px 25px -5px rgba(0,0,0,0.05);
     }
 
     body.dark {
@@ -45,7 +39,7 @@
 
     body {
       background: var(--bg-page);
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       color: var(--text-dark);
       padding-bottom: 70px;
     }
@@ -56,6 +50,7 @@
       position: relative;
     }
 
+    /* Header */
     .header {
       background: var(--bg-white);
       padding: 16px 20px;
@@ -118,7 +113,7 @@
       margin: 16px;
       padding: 20px;
       border-radius: 24px;
-      box-shadow: var(--shadow-lg);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
       border: 1px solid var(--border);
     }
 
@@ -204,11 +199,6 @@
       font-weight: 700;
     }
 
-    .section-link {
-      font-size: 12px;
-      color: #3b82f6;
-    }
-
     .ads-card {
       background: var(--bg-white);
       border-radius: 24px;
@@ -227,8 +217,6 @@
     .progress-fill {
       background: #3b82f6;
       height: 100%;
-      width: 50%;
-      border-radius: 3px;
     }
 
     .ad-button {
@@ -240,11 +228,6 @@
       justify-content: space-between;
       align-items: center;
       cursor: pointer;
-      transition: transform 0.1s;
-    }
-
-    .ad-button:active {
-      transform: scale(0.98);
     }
 
     .ad-button-info {
@@ -262,12 +245,6 @@
       margin-top: 4px;
     }
 
-    .ad-button-sub {
-      font-size: 12px;
-      opacity: 0.8;
-      margin-top: 4px;
-    }
-
     .watch-btn-large {
       background: white;
       color: #3b82f6;
@@ -275,7 +252,6 @@
       padding: 12px 28px;
       border-radius: 40px;
       font-weight: 700;
-      font-size: 16px;
       cursor: pointer;
     }
 
@@ -288,10 +264,8 @@
       background: rgba(0,0,0,0.95);
       z-index: 1000;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      animation: fadeIn 0.3s ease;
     }
 
     .ad-modal-content {
@@ -310,41 +284,12 @@
       margin: 20px 0;
     }
 
-    .ad-progress {
-      width: 100%;
-      height: 8px;
-      background: var(--border);
-      border-radius: 4px;
-      overflow: hidden;
-      margin: 20px 0;
-    }
-
-    .ad-progress-fill {
-      height: 100%;
-      background: #3b82f6;
-      width: 0%;
-      transition: width 0.3s ease;
-    }
-
-    .close-modal-btn {
-      background: #3b82f6;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 40px;
-      font-weight: 600;
-      margin-top: 16px;
-      cursor: pointer;
-    }
-
     .task-btn {
       background: #3b82f6;
       color: white;
       border: none;
       padding: 8px 20px;
       border-radius: 30px;
-      font-weight: 600;
-      font-size: 13px;
       cursor: pointer;
     }
 
@@ -363,16 +308,10 @@
       border-bottom: 1px solid var(--border);
     }
 
-    .leaderboard-item:last-child {
-      border-bottom: none;
-    }
-
     .rank {
       width: 32px;
       font-weight: 700;
-      font-size: 16px;
     }
-
     .rank-1 { color: #fbbf24; }
     .rank-2 { color: #94a3b8; }
     .rank-3 { color: #cd7f32; }
@@ -409,7 +348,6 @@
       border: none;
       padding: 6px 14px;
       border-radius: 20px;
-      font-size: 12px;
       cursor: pointer;
     }
 
@@ -438,8 +376,6 @@
       color: var(--text-gray);
       font-size: 11px;
       cursor: pointer;
-      transition: all 0.2s;
-      font-weight: 500;
     }
 
     .nav-item.active {
@@ -464,15 +400,6 @@
       white-space: nowrap;
     }
 
-    .page {
-      animation: fadeIn 0.25s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
     .btn-primary {
       background: #3b82f6;
       color: white;
@@ -493,12 +420,10 @@
       background: var(--bg-gray);
       color: var(--text-dark);
       margin: 8px 0;
-      font-size: 14px;
     }
 
     label {
       font-weight: 500;
-      font-size: 14px;
       margin-top: 8px;
       display: block;
     }
@@ -511,11 +436,6 @@
       font-size: 12px;
       margin-top: 12px;
       text-align: center;
-    }
-
-    body.dark .ad-warning {
-      background: #422800;
-      color: #fbbf24;
     }
 
     .loading {
@@ -531,31 +451,20 @@
 </div>
 
 <script>
-  // Firebase Configuration - আপনার দেওয়া কনফিগ
+  // Firebase Configuration
   const firebaseConfig = {
-    apiKey: "AIzaSyBXY_T6Zrkvb705xe3OPPuaCJ8opx3z6_0",
-    authDomain: "oreo-92d94.firebaseapp.com",
-    projectId: "oreo-92d94",
-    storageBucket: "oreo-92d94.firebasestorage.app",
-    messagingSenderId: "686553199438",
-    appId: "1:686553199438:web:1e568d100011656ae5641f"
+    apiKey: "AIzaSyB8leAjKEjUJAtF5TE43EO-HduxwpCSxIU",
+    authDomain: "infinity-earn-286dc.firebaseapp.com",
+    databaseURL: "https://infinity-earn-286dc-default-rtdb.firebaseio.com",
+    projectId: "infinity-earn-286dc",
+    storageBucket: "infinity-earn-286dc.firebasestorage.app",
+    messagingSenderId: "552917641589",
+    appId: "1:552917641589:web:a5a7b6c39ebc5959a38b3cf"
   };
 
   // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
-  
-  // Realtime Database রেফারেন্স - সঠিক URL সেট করা
-  // Firebase Realtime Database URL সাধারণত এই ফরম্যাটে হয়
-  const databaseURL = `https://${firebaseConfig.projectId}-default-rtdb.asia-southeast1.firebasedatabase.app/`;
-  
-  // Database রেফারেন্স তৈরি
-  let database;
-  try {
-    database = firebase.database();
-    console.log("Firebase Database initialized successfully");
-  } catch (error) {
-    console.error("Database init error:", error);
-  }
+  const database = firebase.database();
 
   const tg = window.Telegram?.WebApp;
   if (tg) {
@@ -568,22 +477,29 @@
   let currentUser = null;
   let userId = null;
   let currentPage = "dashboard";
-  let dbError = false;
+  let globalSettings = null;
 
-  // Local Storage Backup (যদি Firebase না চলে)
-  function saveToLocalStorage(data) {
-    localStorage.setItem(`infinity_user_${userId}`, JSON.stringify(data));
-  }
-
-  function loadFromLocalStorage() {
-    if (!userId) return null;
-    const saved = localStorage.getItem(`infinity_user_${userId}`);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch(e) { return null; }
+  // Load Settings from Firebase
+  async function loadSettings() {
+    const settingsRef = database.ref('settings');
+    const snapshot = await settingsRef.once('value');
+    if (snapshot.exists()) {
+      globalSettings = snapshot.val();
+    } else {
+      // Default settings
+      globalSettings = {
+        adReward: 30,
+        dailyAdLimit: 20,
+        adsPerBundle: 3,
+        minWithdraw: 50,
+        dailyBonusReward: 10,
+        dailyBonusAds: 4,
+        signupBonus: 10,
+        referralBonus: 25
+      };
+      await settingsRef.set(globalSettings);
     }
-    return null;
+    return globalSettings;
   }
 
   function showToast(msg) {
@@ -642,7 +558,6 @@
       
       if (progress >= 100) {
         clearInterval(interval);
-        if (statusText) statusText.innerText = 'Ad completed!';
         setTimeout(() => {
           adContainer.remove();
           if (callback) callback(true);
@@ -656,45 +571,23 @@
     document.head.appendChild(script);
   }
 
-  // Update User Data (Firebase + Local Backup)
+  // Update User Data in Firebase
   async function updateUserData(data) {
     if (!userId) return;
-    if (currentUser) {
-      Object.assign(currentUser, data);
-    }
-    saveToLocalStorage(currentUser);
-    
-    if (database && !dbError) {
-      try {
-        await database.ref(`users/${userId}`).update(data);
-      } catch (error) {
-        console.error("Firebase update error:", error);
-        dbError = true;
-      }
-    }
+    await database.ref(`users/${userId}`).update(data);
+    if (currentUser) Object.assign(currentUser, data);
   }
 
   // Add Transaction
   async function addTransaction(type, amount) {
-    if (!userId || !currentUser) return;
+    if (!userId) return;
     const transaction = {
       type: type,
       amount: amount,
       date: new Date().toLocaleString(),
       timestamp: Date.now()
     };
-    
-    if (!currentUser.transactions) currentUser.transactions = [];
-    currentUser.transactions.unshift(transaction);
-    if (currentUser.transactions.length > 20) currentUser.transactions.pop();
-    
-    saveToLocalStorage(currentUser);
-    
-    if (database && !dbError) {
-      try {
-        await database.ref(`users/${userId}/transactions`).push(transaction);
-      } catch(e) { console.error(e); }
-    }
+    await database.ref(`users/${userId}/transactions`).push(transaction);
   }
 
   // Add Earnings
@@ -718,11 +611,11 @@
     render();
   }
 
-  // Watch 3 Ads Bundle (30 points)
+  // Watch Ads Bundle (using settings)
   async function startWatchingAds() {
-    if (!currentUser) return;
-    const adLimit = currentUser.adLimit || { used: 0, max: 20 };
-    if (adLimit.used + 3 > adLimit.max) {
+    if (!currentUser || !globalSettings) return;
+    const adLimit = currentUser.adLimit || { used: 0, max: globalSettings.dailyAdLimit };
+    if (adLimit.used + globalSettings.adsPerBundle > adLimit.max) {
       const remaining = adLimit.max - adLimit.used;
       if (remaining <= 0) {
         showToast("Daily ad limit reached! Come back tomorrow.");
@@ -733,8 +626,8 @@
     }
     
     let currentAdIndex = 0;
-    const totalAds = 3;
-    const rewardAmount = 30;
+    const totalAds = globalSettings.adsPerBundle;
+    const rewardAmount = globalSettings.adReward;
     
     function showAdModal() {
       const modal = document.createElement('div');
@@ -744,11 +637,11 @@
           <div style="font-size: 48px; margin-bottom: 10px;">📺</div>
           <h3>Watch Ads Bundle</h3>
           <div class="ad-counter">Ad ${currentAdIndex + 1} of ${totalAds}</div>
-          <div class="ad-progress">
-            <div class="ad-progress-fill" style="width: ${(currentAdIndex / totalAds) * 100}%"></div>
+          <div style="width:100%; height:6px; background:#e0e0e0; border-radius:3px; margin:20px 0;">
+            <div style="width:${(currentAdIndex / totalAds) * 100}%; height:100%; background:#3b82f6; border-radius:3px;"></div>
           </div>
           <p style="margin: 10px 0; color: var(--text-gray);">Complete all ${totalAds} ads to earn ${rewardAmount} points!</p>
-          <button class="close-modal-btn" id="watchBundleAdBtn">Watch Ad Now</button>
+          <button class="watch-btn-large" id="watchBundleAdBtn" style="background:#3b82f6; color:white;">Watch Ad Now</button>
         </div>
       `;
       
@@ -766,7 +659,7 @@
               adLimit.used++;
               
               if (currentAdIndex >= totalAds) {
-                await addEarnings(rewardAmount, "3 Ads Bundle (30 points)");
+                await addEarnings(rewardAmount, `${totalAds} Ads Bundle (${rewardAmount} points)`);
                 const newAdsWatched = (currentUser.adsWatched || 0) + totalAds;
                 await updateUserData({ adsWatched: newAdsWatched });
                 showToast(`🎉 Congratulations! You earned ${rewardAmount} points!`);
@@ -784,28 +677,28 @@
     showAdModal();
   }
 
-  // Daily Bonus - 4 ads then 10 points
+  // Daily Bonus
   async function startDailyBonus() {
-    if (!currentUser) return;
+    if (!currentUser || !globalSettings) return;
     if (currentUser.dailyBonusClaimed) {
       showToast("You've already claimed today's daily bonus! Come back tomorrow.");
       return;
     }
     
-    const adLimit = currentUser.adLimit || { used: 0, max: 20 };
-    if (adLimit.used + 4 > adLimit.max) {
+    const adLimit = currentUser.adLimit || { used: 0, max: globalSettings.dailyAdLimit };
+    if (adLimit.used + globalSettings.dailyBonusAds > adLimit.max) {
       const remaining = adLimit.max - adLimit.used;
       if (remaining <= 0) {
         showToast("Daily ad limit reached! Come back tomorrow.");
         return;
       }
-      showToast(`You can only watch ${remaining} more ads today. Try again later.`);
+      showToast(`You can only watch ${remaining} more ads today.`);
       return;
     }
     
     let currentAdIndex = 0;
-    const totalAds = 4;
-    const bonusReward = 10;
+    const totalAds = globalSettings.dailyBonusAds;
+    const bonusReward = globalSettings.dailyBonusReward;
     
     function showAdModal() {
       const modal = document.createElement('div');
@@ -815,11 +708,11 @@
           <div style="font-size: 48px; margin-bottom: 10px;">🎁</div>
           <h3>Daily Bonus</h3>
           <div class="ad-counter">Ad ${currentAdIndex + 1} of ${totalAds}</div>
-          <div class="ad-progress">
-            <div class="ad-progress-fill" style="width: ${(currentAdIndex / totalAds) * 100}%"></div>
+          <div style="width:100%; height:6px; background:#e0e0e0; border-radius:3px; margin:20px 0;">
+            <div style="width:${(currentAdIndex / totalAds) * 100}%; height:100%; background:#f59e0b; border-radius:3px;"></div>
           </div>
-          <p style="margin: 10px 0; color: var(--text-gray);">Watch all ${totalAds} ads to earn ${bonusReward} points!</p>
-          <button class="close-modal-btn" id="bonusAdBtn">Watch Ad Now</button>
+          <p style="margin: 10px 0;">Watch all ${totalAds} ads to earn ${bonusReward} points!</p>
+          <button class="watch-btn-large" id="bonusAdBtn" style="background:#f59e0b; color:white;">Watch Ad Now</button>
         </div>
       `;
       
@@ -837,13 +730,13 @@
               adLimit.used++;
               
               if (currentAdIndex >= totalAds) {
-                await addEarnings(bonusReward, "Daily Bonus (4 Ads Completed)");
+                await addEarnings(bonusReward, "Daily Bonus");
                 const newAdsWatched = (currentUser.adsWatched || 0) + totalAds;
                 await updateUserData({ 
                   adsWatched: newAdsWatched,
                   dailyBonusClaimed: true 
                 });
-                showToast(`🎉 Congratulations! You earned ${bonusReward} points!`);
+                showToast(`🎉 You earned ${bonusReward} bonus points!`);
               } else {
                 showAdModal();
               }
@@ -872,15 +765,15 @@
     await addEarnings(task.reward, `Task: ${task.title}`);
   }
 
-  // Request Withdrawal with 4 ads
+  // Request Withdrawal
   async function requestWithdrawWithAds(amount, method, accountNumber) {
-    if (!currentUser) return;
+    if (!currentUser || !globalSettings) return;
     if (amount > currentUser.withdrawable) {
       showToast("Insufficient balance");
       return false;
     }
-    if (amount < 50) {
-      showToast("Minimum withdraw ₹50");
+    if (amount < globalSettings.minWithdraw) {
+      showToast(`Minimum withdraw ₹${globalSettings.minWithdraw}`);
       return false;
     }
     if (!accountNumber || accountNumber.trim() === "") {
@@ -888,14 +781,14 @@
       return false;
     }
     
-    const adLimit = currentUser.adLimit || { used: 0, max: 20 };
+    const adLimit = currentUser.adLimit || { used: 0, max: globalSettings.dailyAdLimit };
     const remainingAds = adLimit.max - adLimit.used;
     if (remainingAds < 4) {
-      showToast(`You need to watch 4 verification ads. You have only ${remainingAds} ads left today.`);
+      showToast(`Need 4 verification ads. Only ${remainingAds} left today.`);
       return false;
     }
     
-    showToast("Starting withdrawal verification. Please watch 4 ads.");
+    showToast("Starting verification. Please watch 4 ads.");
     
     let currentAdIndex = 0;
     const totalAds = 4;
@@ -908,11 +801,10 @@
           <div style="font-size: 48px; margin-bottom: 10px;">🏧</div>
           <h3>Withdrawal Verification</h3>
           <div class="ad-counter">Ad ${currentAdIndex + 1} of ${totalAds}</div>
-          <div class="ad-progress">
-            <div class="ad-progress-fill" style="width: ${(currentAdIndex / totalAds) * 100}%"></div>
+          <div style="width:100%; height:6px; background:#e0e0e0; border-radius:3px; margin:20px 0;">
+            <div style="width:${(currentAdIndex / totalAds) * 100}%; height:100%; background:#10b981; border-radius:3px;"></div>
           </div>
-          <p style="margin: 10px 0; color: var(--text-gray);">Watch ${totalAds} ads to complete your withdrawal request</p>
-          <button class="close-modal-btn" id="verifyAdBtn">Watch Ad ${currentAdIndex + 1}</button>
+          <button class="watch-btn-large" id="verifyAdBtn" style="background:#10b981; color:white;">Watch Ad ${currentAdIndex + 1}</button>
         </div>
       `;
       
@@ -935,7 +827,7 @@
                 showAdModal(resolve);
               }
             } else {
-              showToast("Ad failed to load. Please try again.");
+              showToast("Ad failed to load.");
               resolve(false);
             }
           });
@@ -943,9 +835,7 @@
       }
     }
     
-    const success = await new Promise((resolve) => {
-      showAdModal(resolve);
-    });
+    const success = await new Promise((resolve) => { showAdModal(resolve); });
     
     if (success) {
       const newWithdrawable = currentUser.withdrawable - amount;
@@ -965,62 +855,50 @@
         timestamp: Date.now()
       };
       
-      if (!currentUser.withdrawals) currentUser.withdrawals = [];
-      currentUser.withdrawals.unshift(withdrawal);
-      saveToLocalStorage(currentUser);
+      await database.ref(`users/${userId}/withdrawals`).push(withdrawal);
+      await addTransaction(`Withdraw to ${method}`, -amount);
       
-      if (database && !dbError) {
-        try {
-          await database.ref(`users/${userId}/withdrawals`).push(withdrawal);
-        } catch(e) { console.error(e); }
-      }
-      
-      await addTransaction(`Withdraw to ${method} (${accountNumber})`, -amount);
-      
-      showToast(`✅ Withdrawal of ₹${amount} to ${method} has been processed successfully!`);
+      showToast(`✅ Withdrawal of ₹${amount} processed!`);
       render();
     }
     return success;
   }
 
   // Leaderboard Data
-  const topEarnersData = [
+  const leaderboardData = [
     { name: "Rakib Hasan", amount: 15750.80, rank: 1 },
     { name: "Shohan Ahmed", amount: 12850.60, rank: 2 },
     { name: "Jannat Islam", amount: 10250.30, rank: 3 },
     { name: "Mim Akter", amount: 8750.20, rank: 4 }
   ];
 
-  const referralLeaderboardData = [
-    { name: "Rakib Hasan", amount: 5250.30, rank: 1 },
-    { name: "Shohan Ahmed", amount: 4250.10, rank: 2 },
-    { name: "Jannat Islam", amount: 3150.20, rank: 3 }
-  ];
-
-  // Initialize User
+  // Initialize User in Firebase
   async function initUser() {
+    await loadSettings();
+    
     const telegramUser = tg?.initDataUnsafe?.user;
     const uid = telegramUser?.id?.toString() || `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     userId = uid;
     
-    // প্রথমে Local Storage থেকে লোড করার চেষ্টা
-    let userData = loadFromLocalStorage();
+    const userRef = database.ref(`users/${userId}`);
+    const snapshot = await userRef.once('value');
+    const userData = snapshot.val();
     
     if (!userData) {
-      // Default User Data
-      userData = {
+      // New user
+      const defaultUser = {
         name: telegramUser?.first_name || "Rakib Hasan",
-        level: 12,
-        totalBalance: 1590.50,
-        withdrawable: 1200.30,
-        todayEarnings: 120.50,
-        totalEarnings: 15750.80,
-        adsWatched: 120,
-        dailyStreak: 7,
-        referralCount: 5,
-        referralEarnings: 250.0,
+        level: 1,
+        totalBalance: globalSettings.signupBonus,
+        withdrawable: globalSettings.signupBonus,
+        todayEarnings: globalSettings.signupBonus,
+        totalEarnings: globalSettings.signupBonus,
+        adsWatched: 0,
+        dailyStreak: 1,
+        referralCount: 0,
+        referralEarnings: 0,
         referralLink: `https://t.me/infiniiearn_bot?start=${userId}`,
-        adLimit: { used: 5, max: 20 },
+        adLimit: { used: 0, max: globalSettings.dailyAdLimit },
         tasks: [
           { id: 1, title: "Follow on Twitter", reward: 2.00, completed: false, icon: "🐦" },
           { id: 2, title: "Join Telegram Channel", reward: 3.00, completed: false, icon: "📢" },
@@ -1030,35 +908,18 @@
         transactions: [],
         withdrawals: []
       };
-      saveToLocalStorage(userData);
+      await userRef.set(defaultUser);
+      currentUser = defaultUser;
+      showToast(`Welcome! You got ₹${globalSettings.signupBonus} signup bonus!`);
+    } else {
+      currentUser = userData;
     }
-    
-    currentUser = userData;
-    
-    // Firebase এ সেভ করার চেষ্টা (যদি possible হয়)
-    if (database && !dbError) {
-      try {
-        const snapshot = await database.ref(`users/${userId}`).once('value');
-        if (!snapshot.exists()) {
-          await database.ref(`users/${userId}`).set(currentUser);
-        } else {
-          // Firebase থেকে最新 ডাটা নেওয়া
-          const fbData = snapshot.val();
-          currentUser = { ...currentUser, ...fbData };
-          saveToLocalStorage(currentUser);
-        }
-      } catch (error) {
-        console.error("Firebase read error, using local storage:", error);
-        dbError = true;
-      }
-    }
-    
     render();
   }
 
-  // Render Functions
+  // Render Dashboard
   function renderDashboard() {
-    const remainingAds = (currentUser.adLimit?.max || 20) - (currentUser.adLimit?.used || 0);
+    const remainingAds = (currentUser.adLimit?.max || globalSettings?.dailyAdLimit || 20) - (currentUser.adLimit?.used || 0);
     
     return `
       <div class="page">
@@ -1082,59 +943,34 @@
         </div>
 
         <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon">📺</div>
-            <div class="stat-title">Ads Watched</div>
-            <div class="stat-number">${currentUser.adsWatched || 0}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">🔥</div>
-            <div class="stat-title">Daily Streak</div>
-            <div class="stat-number">${currentUser.dailyStreak || 7} Days</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">👥</div>
-            <div class="stat-title">Referral Earnings</div>
-            <div class="stat-number">₹${(currentUser.referralEarnings || 0).toFixed(2)}</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon">⭐</div>
-            <div class="stat-title">Available Ads</div>
-            <div class="stat-number">${remainingAds}/${currentUser.adLimit?.max || 20}</div>
-          </div>
+          <div class="stat-card"><div class="stat-icon">📺</div><div class="stat-title">Ads Watched</div><div class="stat-number">${currentUser.adsWatched || 0}</div></div>
+          <div class="stat-card"><div class="stat-icon">🔥</div><div class="stat-title">Daily Streak</div><div class="stat-number">${currentUser.dailyStreak || 7} Days</div></div>
+          <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-title">Referral Earnings</div><div class="stat-number">₹${(currentUser.referralEarnings || 0).toFixed(2)}</div></div>
+          <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-title">Available Ads</div><div class="stat-number">${remainingAds}/${currentUser.adLimit?.max || globalSettings?.dailyAdLimit || 20}</div></div>
         </div>
 
         <div class="section">
-          <div class="section-header">
-            <div class="section-title">Watch Ads</div>
-            <div class="section-link">Resets in 05:45:30</div>
-          </div>
+          <div class="section-header"><div class="section-title">Watch Ads</div><div class="section-link">Resets in 05:45:30</div></div>
           <div class="ads-card">
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: ${((currentUser.adLimit?.used || 0) / (currentUser.adLimit?.max || 20)) * 100}%"></div>
-            </div>
+            <div class="progress-bar"><div class="progress-fill" style="width: ${((currentUser.adLimit?.used || 0) / (currentUser.adLimit?.max || 20)) * 100}%"></div></div>
             <div class="ad-button" id="watchAdsBtn">
               <div class="ad-button-info">
-                <div class="ad-button-title">Watch 3 Ads Bundle</div>
-                <div class="ad-button-price">+30 Points</div>
-                <div class="ad-button-sub">Watch 3 ads and earn 30 points instantly!</div>
+                <div class="ad-button-title">Watch ${globalSettings?.adsPerBundle || 3} Ads Bundle</div>
+                <div class="ad-button-price">+${globalSettings?.adReward || 30} Points</div>
+                <div class="ad-button-sub">Watch and earn instantly!</div>
               </div>
               <div class="watch-btn-large">Watch Now</div>
             </div>
-            <div class="ad-warning">
-              ⚡ Each ad view gives you points. Complete all 3 ads to get 30 points!
-            </div>
+            <div class="ad-warning">⚡ Complete all ads to get points!</div>
           </div>
         </div>
 
         <div class="section">
-          <div class="section-header">
-            <div class="section-title">🏆 Top Earners</div>
-          </div>
+          <div class="section-header"><div class="section-title">🏆 Top Earners</div></div>
           <div class="leaderboard-list">
-            ${topEarnersData.map(item => `
+            ${leaderboardData.map(item => `
               <div class="leaderboard-item">
-                <div class="rank rank-${item.rank === 1 ? '1' : (item.rank === 2 ? '2' : (item.rank === 3 ? '3' : ''))}">${item.rank}</div>
+                <div class="rank rank-${item.rank === 1 ? '1' : (item.rank === 2 ? '2' : '3')}">${item.rank}</div>
                 <div class="leaderboard-name">${item.name}</div>
                 <div class="leaderboard-amount">₹${item.amount.toFixed(2)}</div>
               </div>
@@ -1146,14 +982,11 @@
   }
 
   function renderTasks() {
-    const bonusStatus = currentUser.dailyBonusClaimed ? "✅ Claimed Today" : "🎁 Available";
-    const bonusColor = currentUser.dailyBonusClaimed ? "var(--green)" : "var(--blue-primary)";
+    const bonusStatus = currentUser.dailyBonusClaimed ? "✅ Claimed" : "🎁 Available";
     
     return `
       <div class="page">
-        <div class="section">
-          <div class="section-title">🎯 Tasks Center</div>
-        </div>
+        <div class="section"><div class="section-title">🎯 Tasks Center</div></div>
         ${(currentUser.tasks || []).map(task => `
           <div class="ads-card" style="margin: 0 16px 12px 16px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
@@ -1162,29 +995,22 @@
                 <span style="font-weight: 600; margin-left: 12px;">${task.title}</span>
                 <div style="font-size: 13px; color: var(--green); margin-top: 4px;">+₹${task.reward}</div>
               </div>
-              ${task.completed ? 
-                '<span style="color: var(--green);">✅ Completed</span>' : 
-                `<button class="task-btn" data-task-id="${task.id}">Complete</button>`
-              }
+              ${task.completed ? '<span style="color: var(--green);">✅ Completed</span>' : `<button class="task-btn" data-task-id="${task.id}">Complete</button>`}
             </div>
           </div>
         `).join('')}
         
         <div class="ads-card" style="margin: 0 16px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <div><strong>🎁 Daily Bonus</strong></div>
-            <div style="color: ${bonusColor}; font-size: 13px; font-weight: 500;">${bonusStatus}</div>
-          </div>
-          <div style="background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 16px; padding: 16px; margin-top: 8px;">
+          <div style="margin-bottom: 12px;"><strong>🎁 Daily Bonus</strong> <span style="float:right">${bonusStatus}</span></div>
+          <div style="background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 16px; padding: 16px;">
             <div style="display: flex; justify-content: space-between; align-items: center;">
               <div style="color: white;">
-                <div style="font-weight: 700; font-size: 18px;">Watch 4 Ads</div>
-                <div style="font-size: 24px; font-weight: 800;">+10 Points</div>
-                <div style="font-size: 11px; opacity: 0.9;">Watch 4 Monetag ads to earn bonus!</div>
+                <div style="font-weight: 700;">Watch ${globalSettings?.dailyBonusAds || 4} Ads</div>
+                <div style="font-size: 20px; font-weight: 800;">+${globalSettings?.dailyBonusReward || 10} Points</div>
               </div>
               ${!currentUser.dailyBonusClaimed ? 
-                `<button id="dailyBonusBtn" style="background: white; color: #d97706; border: none; padding: 10px 24px; border-radius: 40px; font-weight: 700; cursor: pointer;">Claim</button>` :
-                `<div style="background: rgba(255,255,255,0.3); padding: 10px 20px; border-radius: 40px; color: white;">Claimed</div>`
+                `<button id="dailyBonusBtn" style="background: white; color: #d97706; border: none; padding: 10px 20px; border-radius: 40px; font-weight: 700;">Claim</button>` :
+                `<div style="background: rgba(255,255,255,0.3); padding: 10px 20px; border-radius: 40px;">Claimed</div>`
               }
             </div>
           </div>
@@ -1195,33 +1021,25 @@
 
   function renderWallet() {
     const transactions = currentUser.transactions || [];
+    const recentTx = Array.isArray(transactions) ? transactions.slice(0, 5) : [];
+    
     return `
       <div class="page">
         <div class="balance-card">
           <div class="balance-label">Available Balance</div>
           <div class="balance-amount">₹${(currentUser.withdrawable || 0).toFixed(2)}</div>
           <div class="balance-stats">
-            <div class="balance-stat">
-              <div class="balance-stat-value">₹${((currentUser.totalBalance || 0) - (currentUser.withdrawable || 0)).toFixed(2)}</div>
-              <div class="balance-stat-label">Pending</div>
-            </div>
-            <div class="balance-stat">
-              <div class="balance-stat-value">₹${(currentUser.totalEarnings || 0).toFixed(2)}</div>
-              <div class="balance-stat-label">Total Earned</div>
-            </div>
+            <div class="balance-stat"><div class="balance-stat-value">₹${((currentUser.totalBalance || 0) - (currentUser.withdrawable || 0)).toFixed(2)}</div><div class="balance-stat-label">Pending</div></div>
+            <div class="balance-stat"><div class="balance-stat-value">₹${(currentUser.totalEarnings || 0).toFixed(2)}</div><div class="balance-stat-label">Total Earned</div></div>
           </div>
         </div>
-        <div class="section">
-          <div class="section-title">Transaction History</div>
-        </div>
+        <div class="section"><div class="section-title">Transaction History</div></div>
         <div class="leaderboard-list" style="margin: 0 16px;">
-          ${transactions.slice(0, 5).map(tx => `
+          ${recentTx.map(tx => `
             <div class="leaderboard-item">
               <div class="leaderboard-name">${tx.type}</div>
-              <div class="leaderboard-amount" style="color: ${tx.amount > 0 ? '#10b981' : '#ef4444'}">
-                ${tx.amount > 0 ? `+₹${tx.amount.toFixed(2)}` : `-₹${Math.abs(tx.amount).toFixed(2)}`}
-              </div>
-              <div style="font-size: 11px; color: var(--text-gray);">${tx.date}</div>
+              <div class="leaderboard-amount" style="color: ${tx.amount > 0 ? '#10b981' : '#ef4444'}">${tx.amount > 0 ? `+₹${tx.amount}` : `-₹${Math.abs(tx.amount)}`}</div>
+              <div style="font-size: 11px;">${tx.date}</div>
             </div>
           `).join('')}
         </div>
@@ -1231,43 +1049,33 @@
 
   function renderWithdraw() {
     const withdrawals = currentUser.withdrawals || [];
+    const withdrawalsList = Array.isArray(withdrawals) ? withdrawals : [];
+    
     return `
       <div class="page">
         <div class="balance-card">
           <div class="balance-label">Withdrawable Balance</div>
           <div class="balance-amount">₹${(currentUser.withdrawable || 0).toFixed(2)}</div>
-          <div class="ad-warning" style="margin-top: 12px;">
-            🎬 Note: Withdrawal requires watching 4 verification ads (Monetag Ad Zone)
-          </div>
+          <div class="ad-warning">🎬 Requires watching 4 verification ads</div>
         </div>
         <div class="ads-card" style="margin: 0 16px;">
-          <div style="margin-bottom: 16px;">
-            <label>Amount (Min ₹50)</label>
-            <input type="number" id="withdrawAmount" placeholder="Enter amount">
-            <label>Account Number</label>
-            <input type="text" id="accountNumber" placeholder="Enter your account number">
-            <label>Payment Method</label>
-            <select id="withdrawMethod">
-              <option value="bKash">bKash</option>
-              <option value="Nagad">Nagad</option>
-              <option value="Rocket">Rocket</option>
-              <option value="Binance Pay">Binance Pay</option>
-            </select>
-            <button id="submitWithdraw" class="btn-primary">Request Withdrawal (Watch 4 Ads)</button>
-          </div>
+          <label>Amount (Min ₹${globalSettings?.minWithdraw || 50})</label>
+          <input type="number" id="withdrawAmount" placeholder="Enter amount">
+          <label>Account Number</label>
+          <input type="text" id="accountNumber" placeholder="Enter account number">
+          <label>Payment Method</label>
+          <select id="withdrawMethod">
+            <option value="bKash">bKash</option><option value="Nagad">Nagad</option><option value="Rocket">Rocket</option><option value="Binance Pay">Binance Pay</option>
+          </select>
+          <button id="submitWithdraw" class="btn-primary">Request Withdrawal (Watch 4 Ads)</button>
         </div>
-        <div class="section">
-          <div class="section-title">Withdrawal History</div>
-        </div>
+        <div class="section"><div class="section-title">Withdrawal History</div></div>
         <div class="leaderboard-list" style="margin: 0 16px;">
-          ${withdrawals.map(w => `
+          ${withdrawalsList.map(w => `
             <div class="leaderboard-item">
               <div class="leaderboard-name">${w.method} - ${w.accountNumber}</div>
-              <div style="color: ${w.status === 'Completed' ? '#10b981' : '#f59e0b'}; font-weight: 500;">${w.status}</div>
-              <div style="display: flex; flex-direction: column; align-items: flex-end;">
-                <div>₹${w.amount}</div>
-                <div style="font-size: 10px; color: var(--text-gray);">${w.date}</div>
-              </div>
+              <div style="color: ${w.status === 'Completed' ? '#10b981' : '#f59e0b'}">${w.status || 'Pending'}</div>
+              <div>₹${w.amount}</div>
             </div>
           `).join('')}
         </div>
@@ -1281,31 +1089,18 @@
         <div class="balance-card">
           <div class="balance-label">Referral Earnings</div>
           <div class="balance-amount">₹${(currentUser.referralEarnings || 0).toFixed(2)}</div>
-          <div class="balance-stats">
-            <div class="balance-stat">
-              <div class="balance-stat-value">${currentUser.referralCount || 5}</div>
-              <div class="balance-stat-label">Total Referrals</div>
-            </div>
-          </div>
+          <div class="balance-stats"><div class="balance-stat"><div class="balance-stat-value">${currentUser.referralCount || 0}</div><div class="balance-stat-label">Total Referrals</div></div></div>
         </div>
         <div class="referral-card" style="margin: 0 16px;">
           <div class="referral-link-box">
-            <span style="font-size: 11px; font-family: monospace;">${currentUser.referralLink || "https://t.me/infiniiearn_bot"}</span>
+            <span style="font-size: 11px;">${currentUser.referralLink || ""}</span>
             <button class="copy-btn" id="copyLinkBtn2">Copy</button>
           </div>
           <button class="btn-primary" id="inviteBtn">Invite Friends</button>
         </div>
-        <div class="section">
-          <div class="section-title">Referral Leaderboard</div>
-        </div>
+        <div class="section"><div class="section-title">Referral Leaderboard</div></div>
         <div class="leaderboard-list" style="margin: 0 16px;">
-          ${referralLeaderboardData.map(item => `
-            <div class="leaderboard-item">
-              <div class="rank rank-${item.rank === 1 ? '1' : (item.rank === 2 ? '2' : '3')}">${item.rank}</div>
-              <div class="leaderboard-name">${item.name}</div>
-              <div class="leaderboard-amount">₹${item.amount.toFixed(2)}</div>
-            </div>
-          `).join('')}
+          ${leaderboardData.map(item => `<div class="leaderboard-item"><div class="rank rank-${item.rank === 1 ? '1' : (item.rank === 2 ? '2' : '3')}">${item.rank}</div><div class="leaderboard-name">${item.name}</div><div class="leaderboard-amount">₹${item.amount.toFixed(2)}</div></div>`).join('')}
         </div>
       </div>
     `;
@@ -1317,26 +1112,17 @@
         <div class="balance-card">
           <div style="display: flex; align-items: center; gap: 16px;">
             <div class="avatar">${(currentUser.name || "R").charAt(0)}</div>
-            <div>
-              <div style="font-size: 20px; font-weight: 700;">${currentUser.name || "Rakib Hasan"}</div>
-              <div class="level-badge" style="display: inline-block;">Level ${currentUser.level || 12}</div>
-            </div>
+            <div><div style="font-size: 20px; font-weight: 700;">${currentUser.name || "Rakib Hasan"}</div><div class="level-badge">Level ${currentUser.level || 1}</div></div>
           </div>
           <div class="balance-stats" style="margin-top: 20px;">
-            <div class="balance-stat">
-              <div class="balance-stat-value">${currentUser.dailyStreak || 7} Days</div>
-              <div class="balance-stat-label">Streak</div>
-            </div>
-            <div class="balance-stat">
-              <div class="balance-stat-value">${currentUser.adsWatched || 0}</div>
-              <div class="balance-stat-label">Ads Watched</div>
-            </div>
+            <div class="balance-stat"><div class="balance-stat-value">${currentUser.dailyStreak || 1} Days</div><div class="balance-stat-label">Streak</div></div>
+            <div class="balance-stat"><div class="balance-stat-value">${currentUser.adsWatched || 0}</div><div class="balance-stat-label">Ads Watched</div></div>
           </div>
         </div>
         <div class="ads-card" style="margin: 0 16px;">
           <div><strong>Account Status</strong>: Active ✅</div>
-          <div style="margin-top: 8px;"><strong>Join Date</strong>: ${new Date().toLocaleDateString()}</div>
-          <button id="darkModeToggle" class="btn-primary" style="margin-top: 16px;">🌓 Dark / Light Mode</button>
+          <div><strong>User ID</strong>: ${userId?.substr(0, 12)}...</div>
+          <button id="darkModeToggle" class="btn-primary">🌓 Dark / Light Mode</button>
         </div>
       </div>
     `;
@@ -1372,14 +1158,8 @@
     app.innerHTML = `
       <div class="header">
         <div class="header-top">
-          <div class="logo-section">
-            <h1>💰 Infinity Earn</h1>
-            <p>Earn Money Watching Ads</p>
-          </div>
-          <div class="user-info">
-            <span class="level-badge">Level ${currentUser.level || 12}</span>
-            <div class="avatar">${(currentUser.name || "R").charAt(0)}</div>
-          </div>
+          <div class="logo-section"><h1>💰 Infinity Earn</h1><p>Earn Money Watching Ads</p></div>
+          <div class="user-info"><span class="level-badge">Level ${currentUser.level || 1}</span><div class="avatar">${(currentUser.name || "R").charAt(0)}</div></div>
         </div>
       </div>
       ${content}
@@ -1407,10 +1187,7 @@
     });
 
     const copyBtn2 = document.getElementById('copyLinkBtn2');
-    if (copyBtn2) copyBtn2.onclick = () => { 
-      navigator.clipboard.writeText(currentUser.referralLink || "https://t.me/infiniiearn_bot"); 
-      showToast("Link copied!"); 
-    };
+    if (copyBtn2) copyBtn2.onclick = () => { navigator.clipboard.writeText(currentUser.referralLink || ""); showToast("Link copied!"); };
     
     const withdrawBtn = document.getElementById('submitWithdraw');
     if (withdrawBtn) withdrawBtn.onclick = () => {
@@ -1427,10 +1204,7 @@
     };
     
     const inviteBtn = document.getElementById('inviteBtn');
-    if (inviteBtn) inviteBtn.onclick = () => { 
-      navigator.clipboard.writeText(currentUser.referralLink || "https://t.me/infiniiearn_bot"); 
-      showToast("Referral link copied! Share with friends."); 
-    };
+    if (inviteBtn) inviteBtn.onclick = () => { navigator.clipboard.writeText(currentUser.referralLink || ""); showToast("Link copied!"); };
   }
 
   // Dark Mode
