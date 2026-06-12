@@ -278,6 +278,11 @@
       text-align: center;
     }
 
+    body.dark .ad-modal-content {
+      background: #1e293b;
+      color: white;
+    }
+
     .ad-counter {
       font-size: 48px;
       font-weight: 800;
@@ -423,6 +428,10 @@
       margin: 8px 0;
     }
 
+    body.dark input, body.dark select {
+      color: white;
+    }
+
     label {
       font-weight: 500;
       margin-top: 8px;
@@ -439,6 +448,11 @@
       text-align: center;
     }
 
+    body.dark .ad-warning {
+      background: #422006;
+      color: #fbbf24;
+    }
+
     .loading {
       text-align: center;
       padding: 40px;
@@ -452,18 +466,17 @@
 </div>
 
 <script>
-  // Firebase Configuration - আপনার দেওয়া কনফিগ
+  // Firebase Configuration
   const firebaseConfig = {
-  apiKey: "AIzaSyB8leAjKEjUJAtF5TE43EO-HduxwpCSxIU",
-  authDomain: "infinity-earn-286dc.firebaseapp.com",
-  databaseURL: "https://infinity-earn-286dc-default-rtdb.firebaseio.com",
-  projectId: "infinity-earn-286dc",
-  storageBucket: "infinity-earn-286dc.firebasestorage.app",
-  messagingSenderId: "552917641589",
-  appId: "1:552917641589:web:a5a7b6c39ebc5959a38b3c",
-};
+    apiKey: "AIzaSyB8leAjKEjUJAtF5TE43EO-HduxwpCSxIU",
+    authDomain: "infinity-earn-286dc.firebaseapp.com",
+    databaseURL: "https://infinity-earn-286dc-default-rtdb.firebaseio.com",
+    projectId: "infinity-earn-286dc",
+    storageBucket: "infinity-earn-286dc.firebasestorage.app",
+    messagingSenderId: "552917641589",
+    appId: "1:552917641589:web:a5a7b6c39ebc5959a38b3c",
+  };
 
-  // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
   const database = firebase.database();
 
@@ -473,14 +486,11 @@
     tg.enableClosingConfirmation();
   }
 
-  const MONETAG_ZONE_ID = "11129283";
-  
   let currentUser = null;
   let userId = null;
   let currentPage = "dashboard";
   let globalSettings = null;
 
-  // Load Settings from Firebase
   async function loadSettings() {
     try {
       const settingsRef = database.ref('settings');
@@ -489,20 +499,14 @@
         globalSettings = snapshot.val();
       } else {
         globalSettings = {
-          adReward: 30,
-          dailyAdLimit: 20,
-          adsPerBundle: 3,
-          minWithdraw: 50,
-          dailyBonusReward: 10,
-          dailyBonusAds: 4,
-          signupBonus: 10,
-          referralBonus: 25
+          adReward: 30, dailyAdLimit: 20, adsPerBundle: 3,
+          minWithdraw: 50, dailyBonusReward: 10, dailyBonusAds: 4,
+          signupBonus: 10, referralBonus: 25
         };
         await settingsRef.set(globalSettings);
       }
     } catch (error) {
       console.error("Settings load error:", error);
-      // Fallback settings
       globalSettings = {
         adReward: 30, dailyAdLimit: 20, adsPerBundle: 3,
         minWithdraw: 50, dailyBonusReward: 10, dailyBonusAds: 4,
@@ -521,7 +525,7 @@
     if (tg) tg.HapticFeedback?.impactOccurred('light');
   }
 
-  // Real Monetag Ad Show Function
+  // Fixed: Monetag Ad Show Function
   function showMonetagAd(callback) {
     const modal = document.createElement('div');
     modal.className = 'ad-modal';
@@ -544,33 +548,36 @@
       } catch(e) {
         console.error("Ad load error:", e);
         setTimeout(() => {
-          modal.remove();
+          if (modal.parentNode) modal.remove();
           if (callback) callback(true);
-        }, 5000);
+        }, 3000);
         return;
       }
     } else {
       setTimeout(() => {
-        modal.remove();
+        if (modal.parentNode) modal.remove();
         if (callback) callback(true);
-      }, 5000);
+      }, 3000);
       return;
     }
     
     let adCompleted = false;
+    
+    // Auto close after 8 seconds
     setTimeout(() => {
-      if (!adCompleted) {
+      if (!adCompleted && modal.parentNode) {
         adCompleted = true;
         modal.remove();
         if (callback) callback(true);
       }
-    }, 10000);
+    }, 8000);
     
+    // Add close button
     const closeBtn = document.createElement('button');
-    closeBtn.innerText = 'Close Ad';
-    closeBtn.style.cssText = 'background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 40px; margin-top: 16px; cursor: pointer; width: 100%;';
+    closeBtn.innerText = '✓ Complete Ad';
+    closeBtn.style.cssText = 'background: #10b981; color: white; border: none; padding: 12px 20px; border-radius: 40px; margin-top: 16px; cursor: pointer; width: 100%; font-weight: 600;';
     closeBtn.onclick = () => {
-      if (!adCompleted) {
+      if (!adCompleted && modal.parentNode) {
         adCompleted = true;
         modal.remove();
         if (callback) callback(true);
@@ -579,7 +586,6 @@
     modal.querySelector('.ad-modal-content').appendChild(closeBtn);
   }
 
-  // Update User Data in Firebase
   async function updateUserData(data) {
     if (!userId) return;
     try {
@@ -591,7 +597,6 @@
     }
   }
 
-  // Add Transaction
   async function addTransaction(type, amount) {
     if (!userId) return;
     const transaction = {
@@ -610,7 +615,6 @@
     }
   }
 
-  // Add Earnings
   async function addEarnings(amount, source) {
     if (!currentUser) return;
     const newBalance = (currentUser.totalBalance || 0) + amount;
@@ -631,7 +635,6 @@
     render();
   }
 
-  // Watch 3 Ads Bundle
   async function startWatchingAds() {
     if (!currentUser || !globalSettings) return;
     if (currentUser.adLimit.used + globalSettings.adsPerBundle > currentUser.adLimit.max) {
@@ -697,7 +700,6 @@
     showAdModal();
   }
 
-  // Daily Bonus
   async function startDailyBonus() {
     if (!currentUser || !globalSettings) return;
     if (currentUser.dailyBonusClaimed) {
@@ -772,7 +774,6 @@
     showAdModal();
   }
 
-  // Complete Task
   async function completeTask(taskId) {
     const tasks = currentUser.tasks || [];
     const task = tasks.find(t => t.id === taskId);
@@ -786,9 +787,9 @@
     await addEarnings(task.reward, `Task: ${task.title}`);
   }
 
-  // Request Withdrawal
+  // FIXED: Withdrawal function with proper ad showing
   async function requestWithdrawWithAds(amount, method, accountNumber) {
-    if (!currentUser || !globalSettings) return;
+    if (!currentUser || !globalSettings) return false;
     if (amount > currentUser.withdrawable) {
       showToast("Insufficient balance");
       return false;
@@ -824,7 +825,9 @@
           <div style="width:100%; height:6px; background:#e0e0e0; border-radius:3px; margin:20px 0;">
             <div style="width:${(currentAdIndex / totalAds) * 100}%; height:100%; background:#10b981; border-radius:3px;"></div>
           </div>
+          <p style="margin: 10px 0;">Watch verification ad ${currentAdIndex + 1} of ${totalAds}</p>
           <button class="watch-btn-large" id="verifyAdBtn" style="background:#10b981; color:white;">Watch Ad ${currentAdIndex + 1}</button>
+          <button id="cancelWithdrawBtn" style="background:#ef4444; color:white; border:none; padding:10px; border-radius:40px; margin-top:12px; width:100%; cursor:pointer;">Cancel</button>
         </div>
       `;
       
@@ -847,10 +850,19 @@
                 showAdModal(resolve);
               }
             } else {
-              showToast("Ad failed to load.");
+              showToast("Ad failed to load. Please try again.");
               resolve(false);
             }
           });
+        };
+      }
+      
+      const cancelBtn = document.getElementById('cancelWithdrawBtn');
+      if (cancelBtn) {
+        cancelBtn.onclick = () => {
+          modal.remove();
+          showToast("Withdrawal cancelled");
+          resolve(false);
         };
       }
     }
@@ -888,11 +900,11 @@
       
       showToast(`✅ Withdrawal of ₹${amount} processed!`);
       render();
+      return true;
     }
-    return success;
+    return false;
   }
 
-  // Initialize User from Firebase
   async function initUser() {
     await loadSettings();
     
@@ -907,7 +919,7 @@
       
       if (!userData) {
         currentUser = {
-          name: telegramUser?.first_name || "Rakib Hasan",
+          name: telegramUser?.first_name || "User",
           level: 1,
           totalBalance: globalSettings.signupBonus,
           withdrawable: globalSettings.signupBonus,
@@ -945,9 +957,8 @@
       }
     } catch (error) {
       console.error("Firebase init error, using fallback:", error);
-      // Fallback to local user
       currentUser = {
-        name: telegramUser?.first_name || "Rakib Hasan",
+        name: telegramUser?.first_name || "User",
         level: 1,
         totalBalance: 10,
         withdrawable: 10,
@@ -972,7 +983,6 @@
     render();
   }
 
-  // Leaderboard Data
   const leaderboardData = [
     { name: "Rakib Hasan", amount: 15750.80, rank: 1 },
     { name: "Shohan Ahmed", amount: 12850.60, rank: 2 },
@@ -980,7 +990,6 @@
     { name: "Mim Akter", amount: 8750.20, rank: 4 }
   ];
 
-  // Render Dashboard
   function renderDashboard() {
     const remainingAds = currentUser.adLimit.max - currentUser.adLimit.used;
     
@@ -1120,7 +1129,7 @@
         </div>
         <div class="section"><div class="section-title">Withdrawal History</div></div>
         <div class="leaderboard-list" style="margin: 0 16px;">
-          ${(currentUser.withdrawals || []).map(w => `
+          ${(currentUser.withdrawals || []).slice(0, 5).map(w => `
             <div class="leaderboard-item">
               <div class="leaderboard-name">${w.method} - ${w.accountNumber}</div>
               <div style="color: ${w.status === 'Completed' ? '#10b981' : '#f59e0b'}">${w.status || 'Completed'}</div>
@@ -1238,25 +1247,26 @@
     const copyBtn2 = document.getElementById('copyLinkBtn2');
     if (copyBtn2) copyBtn2.onclick = () => { navigator.clipboard.writeText(currentUser.referralLink); showToast("Link copied!"); };
     
-    const withdrawBtn = document.getElementById('submitWithdraw');
-    if (withdrawBtn) withdrawBtn.onclick = () => {
-      const amount = parseFloat(document.getElementById('withdrawAmount')?.value);
-      const method = document.getElementById('withdrawMethod')?.value;
-      const accountNumber = document.getElementById('accountNumber')?.value;
-      if (amount && method && accountNumber) {
-        requestWithdrawWithAds(amount, method, accountNumber);
-      } else if (!accountNumber) {
-        showToast("Please enter account number");
-      } else if (!amount) {
-        showToast("Please enter amount");
-      }
-    };
+    const submitWithdrawBtn = document.getElementById('submitWithdraw');
+    if (submitWithdrawBtn) {
+      submitWithdrawBtn.onclick = () => {
+        const amount = parseFloat(document.getElementById('withdrawAmount')?.value);
+        const method = document.getElementById('withdrawMethod')?.value;
+        const accountNumber = document.getElementById('accountNumber')?.value;
+        if (amount && method && accountNumber) {
+          requestWithdrawWithAds(amount, method, accountNumber);
+        } else if (!accountNumber) {
+          showToast("Please enter account number");
+        } else if (!amount) {
+          showToast("Please enter amount");
+        }
+      };
+    }
     
     const inviteBtn = document.getElementById('inviteBtn');
     if (inviteBtn) inviteBtn.onclick = () => { navigator.clipboard.writeText(currentUser.referralLink); showToast("Link copied!"); };
   }
 
-  // Dark Mode
   function initTheme() {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') document.body.classList.add('dark');
