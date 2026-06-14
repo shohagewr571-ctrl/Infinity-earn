@@ -3,13 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-  <title>Infinity Earn | Telegram Mini App</title>
-  <script src="https://telegram.org/js/telegram-web-app.js?56"></script>
+  <title>Self Click Bot | Earn by Watching Ads</title>
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
-  <!-- Monetag Ad SDK -->
-  <script src='//libtl.com/sdk.js' data-zone='11129283' data-sdk='show_11129283'></script>
   <style>
     * {
       margin: 0;
@@ -18,455 +15,301 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    :root {
-      --bg-page: #f5f7fb;
-      --bg-white: #ffffff;
-      --bg-gray: #f8f9fc;
-      --text-dark: #1a1f36;
-      --text-gray: #6b7280;
-      --blue-primary: #3b82f6;
-      --green: #10b981;
-      --orange: #f59e0b;
-      --border: #e5e7eb;
-    }
-
-    body.dark {
-      --bg-page: #0f172a;
-      --bg-white: #1e293b;
-      --bg-gray: #162236;
-      --text-dark: #f1f5f9;
-      --text-gray: #94a3b8;
-      --border: #334155;
-    }
-
     body {
-      background: var(--bg-page);
+      background: linear-gradient(135deg, #0a0f1e, #0c1222);
+      min-height: 100vh;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-      color: var(--text-dark);
-      padding-bottom: 70px;
+      padding: 16px;
     }
 
-    .app {
-      max-width: 450px;
+    .container {
+      max-width: 400px;
       margin: 0 auto;
-      position: relative;
     }
 
+    /* Header */
     .header {
-      background: var(--bg-white);
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      z-index: 100;
+      text-align: center;
+      margin-bottom: 24px;
+      padding: 20px;
     }
 
-    .header-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .logo-section h1 {
-      font-size: 20px;
-      font-weight: 700;
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-      -webkit-background-clip: text;
+    .header h1 {
+      font-size: 28px;
+      background: linear-gradient(135deg, #FFD966, #FFA500);
       background-clip: text;
+      -webkit-background-clip: text;
       color: transparent;
     }
 
-    .logo-section p {
-      font-size: 11px;
-      color: var(--text-gray);
-    }
-
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .level-badge {
-      background: #3b82f6;
-      color: white;
-      padding: 4px 10px;
-      border-radius: 30px;
+    .header p {
+      color: #9aa9c1;
       font-size: 12px;
-      font-weight: 600;
+      margin-top: 6px;
     }
 
-    .avatar {
-      width: 44px;
-      height: 44px;
-      background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: 700;
-      font-size: 18px;
-    }
-
-    .balance-card {
-      background: var(--bg-white);
-      margin: 16px;
-      padding: 20px;
-      border-radius: 24px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-      border: 1px solid var(--border);
-    }
-
-    .balance-label {
-      font-size: 14px;
-      color: var(--text-gray);
-      margin-bottom: 4px;
-    }
-
-    .balance-amount {
-      font-size: 34px;
-      font-weight: 800;
-      color: var(--text-dark);
-    }
-
-    .balance-stats {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 20px;
-      padding-top: 16px;
-      border-top: 1px solid var(--border);
-    }
-
-    .balance-stat {
-      flex: 1;
-      text-align: center;
-    }
-
-    .balance-stat-value {
-      font-size: 18px;
-      font-weight: 700;
-    }
-
-    .balance-stat-label {
-      font-size: 11px;
-      color: var(--text-gray);
-      margin-top: 4px;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      margin: 0 16px 20px 16px;
-    }
-
-    .stat-card {
-      background: var(--bg-white);
-      padding: 14px;
-      border-radius: 20px;
-      border: 1px solid var(--border);
-    }
-
-    .stat-icon {
-      font-size: 24px;
-      margin-bottom: 8px;
-    }
-
-    .stat-title {
-      font-size: 11px;
-      color: var(--text-gray);
-      margin-bottom: 4px;
-    }
-
-    .stat-number {
-      font-size: 18px;
-      font-weight: 700;
-    }
-
-    .section {
-      margin: 0 16px 20px 16px;
-    }
-
-    .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      margin-bottom: 12px;
-    }
-
-    .section-title {
-      font-size: 18px;
-      font-weight: 700;
-    }
-
-    .ads-card {
-      background: var(--bg-white);
-      border-radius: 24px;
-      padding: 16px;
-      border: 1px solid var(--border);
-    }
-
-    .progress-bar {
-      background: var(--border);
-      height: 6px;
-      border-radius: 3px;
-      overflow: hidden;
-      margin: 12px 0;
-    }
-
-    .progress-fill {
-      background: #3b82f6;
-      height: 100%;
-    }
-
-    .ad-button {
-      background: linear-gradient(135deg, #3b82f6, #2563eb);
-      border-radius: 16px;
-      padding: 20px;
-      margin: 16px 0 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-    }
-
-    .ad-button-info {
-      color: white;
-    }
-
-    .ad-button-title {
-      font-weight: 600;
-      font-size: 18px;
-    }
-
-    .ad-button-price {
-      font-size: 24px;
-      font-weight: 800;
-      margin-top: 4px;
-    }
-
-    .watch-btn-large {
-      background: white;
-      color: #3b82f6;
-      border: none;
-      padding: 12px 28px;
-      border-radius: 40px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .ad-modal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0,0,0,0.95);
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .ad-modal-content {
-      background: var(--bg-white);
-      border-radius: 28px;
-      width: 90%;
-      max-width: 380px;
+    /* Main Card */
+    .card {
+      background: rgba(18, 28, 45, 0.8);
+      backdrop-filter: blur(12px);
+      border-radius: 32px;
       padding: 24px;
+      border: 1px solid rgba(255, 180, 70, 0.3);
+      margin-bottom: 20px;
+    }
+
+    /* Stats Display */
+    .stats {
       text-align: center;
+      margin-bottom: 24px;
     }
 
-    body.dark .ad-modal-content {
-      background: #1e293b;
-      color: white;
-    }
-
-    .ad-counter {
-      font-size: 48px;
-      font-weight: 800;
-      color: #3b82f6;
-      margin: 20px 0;
-    }
-
-    .task-btn {
-      background: #3b82f6;
-      color: white;
-      border: none;
-      padding: 8px 20px;
-      border-radius: 30px;
-      cursor: pointer;
-    }
-
-    .leaderboard-list {
-      background: var(--bg-white);
-      border-radius: 24px;
-      overflow: hidden;
-      border: 1px solid var(--border);
-    }
-
-    .leaderboard-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .rank {
-      width: 32px;
-      font-weight: 700;
-    }
-    .rank-1 { color: #fbbf24; }
-    .rank-2 { color: #94a3b8; }
-    .rank-3 { color: #cd7f32; }
-
-    .leaderboard-name {
-      flex: 1;
-      font-weight: 500;
-    }
-
-    .leaderboard-amount {
-      font-weight: 700;
-      color: #10b981;
-    }
-
-    .referral-card {
-      background: var(--bg-white);
-      border-radius: 24px;
-      padding: 16px;
-      border: 1px solid var(--border);
-    }
-
-    .referral-link-box {
-      background: var(--bg-gray);
-      padding: 12px;
-      border-radius: 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .copy-btn {
-      background: #3b82f6;
-      color: white;
-      border: none;
-      padding: 6px 14px;
-      border-radius: 20px;
-      cursor: pointer;
-    }
-
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      max-width: 450px;
-      margin: 0 auto;
-      background: var(--bg-white);
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: space-around;
-      padding: 10px 16px 22px;
-      z-index: 100;
-    }
-
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      background: none;
-      border: none;
-      color: var(--text-gray);
-      font-size: 11px;
-      cursor: pointer;
-    }
-
-    .nav-item.active {
-      color: #3b82f6;
-    }
-
-    .nav-icon {
-      font-size: 22px;
-    }
-
-    .toast {
-      position: fixed;
-      bottom: 90px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--text-dark);
-      color: var(--bg-white);
-      padding: 10px 20px;
-      border-radius: 40px;
+    .stats .label {
       font-size: 14px;
-      z-index: 200;
-      white-space: nowrap;
+      color: #9aa9c1;
+      letter-spacing: 1px;
     }
 
-    .btn-primary {
-      background: #3b82f6;
-      color: white;
-      border: none;
-      padding: 14px;
-      border-radius: 40px;
-      font-weight: 600;
-      width: 100%;
-      margin-top: 12px;
-      cursor: pointer;
-    }
-
-    input, select {
-      width: 100%;
-      padding: 14px;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      background: var(--bg-gray);
-      color: var(--text-dark);
+    .stats .count {
+      font-size: 64px;
+      font-weight: 800;
+      background: linear-gradient(135deg, #FFD966, #FFA500);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
       margin: 8px 0;
     }
 
-    body.dark input, body.dark select {
-      color: white;
+    .stats .sub {
+      font-size: 12px;
+      color: #6a75a0;
     }
 
-    label {
-      font-weight: 500;
-      margin-top: 8px;
+    /* Progress Bar */
+    .progress-container {
+      margin: 20px 0;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #9aa9c1;
+      margin-bottom: 8px;
+    }
+
+    .progress-bar {
+      background: #1e253f;
+      height: 8px;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      background: linear-gradient(90deg, #FFD966, #FFA500);
+      height: 100%;
+      width: 0%;
+      border-radius: 10px;
+      transition: width 0.3s ease;
+    }
+
+    /* Watch Button */
+    .watch-btn {
+      background: linear-gradient(135deg, #FFA500, #FF7E05);
+      border: none;
+      width: 100%;
+      padding: 18px;
+      border-radius: 60px;
+      font-size: 18px;
+      font-weight: 800;
+      color: #1a1509;
+      cursor: pointer;
+      transition: 0.2s;
+      margin: 16px 0;
+      box-shadow: 0 8px 20px rgba(255, 110, 0, 0.3);
+    }
+
+    .watch-btn:active {
+      transform: scale(0.97);
+    }
+
+    .watch-btn:disabled {
+      background: #4a4a4a;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* Reward Display */
+    .reward-info {
+      background: rgba(42, 109, 245, 0.15);
+      border-radius: 20px;
+      padding: 12px;
+      text-align: center;
+      margin: 16px 0;
+    }
+
+    .reward-amount {
+      font-size: 20px;
+      font-weight: 700;
+      color: #FFD966;
+    }
+
+    /* Total Earned */
+    .earned-card {
+      background: rgba(18, 28, 45, 0.6);
+      border-radius: 24px;
+      padding: 16px;
+      text-align: center;
+      border: 1px solid rgba(72, 187, 255, 0.2);
+    }
+
+    .earned-label {
+      font-size: 12px;
+      color: #9aa9c1;
+    }
+
+    .earned-amount {
+      font-size: 28px;
+      font-weight: 800;
+      color: #FFD966;
+    }
+
+    /* Toast Message */
+    .toast {
+      position: fixed;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1e253f;
+      color: white;
+      padding: 10px 24px;
+      border-radius: 40px;
+      font-size: 14px;
+      z-index: 1000;
+      white-space: nowrap;
+      border-left: 4px solid #FFA500;
+    }
+
+    /* Admin Panel Toggle Button */
+    .admin-toggle {
+      background: rgba(42, 109, 245, 0.2);
+      border: 1px solid #2a6df5;
+      color: #2a6df5;
+      padding: 8px 16px;
+      border-radius: 40px;
+      font-size: 12px;
+      cursor: pointer;
+      margin-top: 12px;
+      width: 100%;
+    }
+
+    .admin-toggle:active {
+      background: rgba(42, 109, 245, 0.4);
+    }
+
+    /* Admin Panel */
+    .admin-panel {
+      background: rgba(18, 28, 45, 0.95);
+      backdrop-filter: blur(12px);
+      border-radius: 24px;
+      padding: 20px;
+      margin-top: 16px;
+      border: 1px solid #2a6df5;
+      display: none;
+    }
+
+    .admin-panel.show {
       display: block;
     }
 
-    .ad-warning {
-      background: #fef3c7;
-      color: #d97706;
-      padding: 12px;
-      border-radius: 12px;
-      font-size: 12px;
-      margin-top: 12px;
+    .admin-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #FFD966;
+      margin-bottom: 16px;
       text-align: center;
     }
 
-    body.dark .ad-warning {
-      background: #422006;
-      color: #fbbf24;
+    .input-group {
+      margin-bottom: 16px;
     }
 
+    .input-group label {
+      display: block;
+      font-size: 12px;
+      color: #9aa9c1;
+      margin-bottom: 6px;
+    }
+
+    .input-group input, .input-group textarea {
+      width: 100%;
+      background: #0c1222;
+      border: 1px solid #2d3a5e;
+      padding: 12px 14px;
+      border-radius: 16px;
+      color: white;
+      outline: none;
+      font-size: 14px;
+    }
+
+    .input-group input:focus, .input-group textarea:focus {
+      border-color: #FFA500;
+    }
+
+    .admin-btn {
+      background: #2a6df5;
+      border: none;
+      padding: 12px;
+      border-radius: 40px;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .admin-btn-danger {
+      background: #ef4444;
+    }
+
+    .admin-btn-warning {
+      background: #f59e0b;
+    }
+
+    .ad-link-display {
+      background: #0c1222;
+      padding: 10px;
+      border-radius: 16px;
+      font-size: 11px;
+      color: #6a75a0;
+      word-break: break-all;
+      margin-top: 8px;
+    }
+
+    /* Loading Spinner */
     .loading {
       text-align: center;
       padding: 40px;
-      color: var(--text-gray);
+      color: #9aa9c1;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 10px;
+      color: #4a5578;
     }
   </style>
 </head>
 <body>
-<div class="app" id="app">
+<div class="container" id="app">
   <div class="loading">Loading...</div>
 </div>
 
 <script>
-  // Firebase Configuration
+  // ========== FIREBASE CONFIGURATION (Your Firebase Config) ==========
   const firebaseConfig = {
     apiKey: "AIzaSyB8leAjKEjUJAtF5TE43EO-HduxwpCSxIU",
     authDomain: "infinity-earn-286dc.firebaseapp.com",
@@ -474,812 +317,506 @@
     projectId: "infinity-earn-286dc",
     storageBucket: "infinity-earn-286dc.firebasestorage.app",
     messagingSenderId: "552917641589",
-    appId: "1:552917641589:web:a5a7b6c39ebc5959a38b3c",
+    appId: "1:552917641589:web:a5a7b6c39ebc5959a38b3c"
   };
 
+  // Initialize Firebase
   firebase.initializeApp(firebaseConfig);
   const database = firebase.database();
 
-  const tg = window.Telegram?.WebApp;
-  if (tg) {
-    tg.expand();
-    tg.enableClosingConfirmation();
-  }
+  // ========== ADMIN PASSWORD ==========
+  const ADMIN_PASSWORD = "myadmin123";
 
+  // ========== GLOBAL VARIABLES ==========
   let currentUser = null;
   let userId = null;
-  let currentPage = "dashboard";
-  let globalSettings = null;
+  let settings = {
+    rewardPerAd: 0.50,
+    dailyLimit: 50,
+    adLink: "https://www.google.com",
+    adPlatform: "Monetag"
+  };
+  let adminLoggedIn = false;
+  let showAdminPanel = false;
 
-  async function loadSettings() {
-    try {
-      const settingsRef = database.ref('settings');
-      const snapshot = await settingsRef.once('value');
-      if (snapshot.exists()) {
-        globalSettings = snapshot.val();
-      } else {
-        globalSettings = {
-          adReward: 30, dailyAdLimit: 20, adsPerBundle: 3,
-          minWithdraw: 50, dailyBonusReward: 10, dailyBonusAds: 4,
-          signupBonus: 10, referralBonus: 25
-        };
-        await settingsRef.set(globalSettings);
-      }
-    } catch (error) {
-      console.error("Settings load error:", error);
-      globalSettings = {
-        adReward: 30, dailyAdLimit: 20, adsPerBundle: 3,
-        minWithdraw: 50, dailyBonusReward: 10, dailyBonusAds: 4,
-        signupBonus: 10, referralBonus: 25
-      };
-    }
-    return globalSettings;
-  }
-
-  function showToast(msg) {
-    const toast = document.createElement('div');
-    toast.className = 'toast';
-    toast.innerText = msg;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), 2000);
-    if (tg) tg.HapticFeedback?.impactOccurred('light');
-  }
-
-  // Fixed: Monetag Ad Show Function
-  function showMonetagAd(callback) {
-    const modal = document.createElement('div');
-    modal.className = 'ad-modal';
-    modal.innerHTML = `
-      <div class="ad-modal-content">
-        <div style="font-size: 48px; margin-bottom: 10px;">🎬</div>
-        <h3>Monetag Ad</h3>
-        <p style="margin: 10px 0; color: var(--text-gray);">Please watch this ad to continue</p>
-        <div id="monetag-ad-container" style="min-height: 250px; margin: 16px 0;"></div>
-        <div style="font-size: 12px; color: var(--text-gray);">Ad will close automatically after completion</div>
-      </div>
-    `;
-    
-    document.body.appendChild(modal);
-    
-    const adContainer = document.getElementById('monetag-ad-container');
-    if (adContainer && typeof show_11129283 !== 'undefined') {
-      try {
-        show_11129283(adContainer);
-      } catch(e) {
-        console.error("Ad load error:", e);
-        setTimeout(() => {
-          if (modal.parentNode) modal.remove();
-          if (callback) callback(true);
-        }, 3000);
-        return;
-      }
-    } else {
-      setTimeout(() => {
-        if (modal.parentNode) modal.remove();
-        if (callback) callback(true);
-      }, 3000);
-      return;
-    }
-    
-    let adCompleted = false;
-    
-    // Auto close after 8 seconds
-    setTimeout(() => {
-      if (!adCompleted && modal.parentNode) {
-        adCompleted = true;
-        modal.remove();
-        if (callback) callback(true);
-      }
-    }, 8000);
-    
-    // Add close button
-    const closeBtn = document.createElement('button');
-    closeBtn.innerText = '✓ Complete Ad';
-    closeBtn.style.cssText = 'background: #10b981; color: white; border: none; padding: 12px 20px; border-radius: 40px; margin-top: 16px; cursor: pointer; width: 100%; font-weight: 600;';
-    closeBtn.onclick = () => {
-      if (!adCompleted && modal.parentNode) {
-        adCompleted = true;
-        modal.remove();
-        if (callback) callback(true);
-      }
-    };
-    modal.querySelector('.ad-modal-content').appendChild(closeBtn);
-  }
-
-  async function updateUserData(data) {
-    if (!userId) return;
-    try {
-      await database.ref(`users/${userId}`).update(data);
-      if (currentUser) Object.assign(currentUser, data);
-    } catch (error) {
-      console.error("Firebase update error:", error);
-      if (currentUser) Object.assign(currentUser, data);
-    }
-  }
-
-  async function addTransaction(type, amount) {
-    if (!userId) return;
-    const transaction = {
-      type: type,
-      amount: amount,
-      date: new Date().toLocaleString(),
-      timestamp: Date.now()
-    };
-    try {
-      await database.ref(`users/${userId}/transactions`).push(transaction);
-    } catch(e) { console.error(e); }
-    if (currentUser) {
-      if (!currentUser.transactions) currentUser.transactions = [];
-      currentUser.transactions.unshift(transaction);
-      if (currentUser.transactions.length > 20) currentUser.transactions.pop();
-    }
-  }
-
-  async function addEarnings(amount, source) {
-    if (!currentUser) return;
-    const newBalance = (currentUser.totalBalance || 0) + amount;
-    const newWithdrawable = (currentUser.withdrawable || 0) + amount;
-    const newTodayEarnings = (currentUser.todayEarnings || 0) + amount;
-    const newTotalEarnings = (currentUser.totalEarnings || 0) + amount;
-    
-    await updateUserData({
-      totalBalance: newBalance,
-      withdrawable: newWithdrawable,
-      todayEarnings: newTodayEarnings,
-      totalEarnings: newTotalEarnings
-    });
-    
-    await addTransaction(source, amount);
-    
-    showToast(`+₹${amount.toFixed(2)} from ${source}`);
-    render();
-  }
-
-  async function startWatchingAds() {
-    if (!currentUser || !globalSettings) return;
-    if (currentUser.adLimit.used + globalSettings.adsPerBundle > currentUser.adLimit.max) {
-      const remaining = currentUser.adLimit.max - currentUser.adLimit.used;
-      if (remaining <= 0) {
-        showToast("Daily ad limit reached! Come back tomorrow.");
-        return;
-      }
-      showToast(`You can only watch ${remaining} more ads today`);
-      return;
-    }
-    
-    let currentAdIndex = 0;
-    const totalAds = globalSettings.adsPerBundle;
-    const rewardAmount = globalSettings.adReward;
-    
-    function showAdModal() {
-      const modal = document.createElement('div');
-      modal.className = 'ad-modal';
-      modal.innerHTML = `
-        <div class="ad-modal-content">
-          <div style="font-size: 48px; margin-bottom: 10px;">📺</div>
-          <h3>Watch Ads Bundle</h3>
-          <div class="ad-counter">Ad ${currentAdIndex + 1} of ${totalAds}</div>
-          <div style="width:100%; height:6px; background:#e0e0e0; border-radius:3px; margin:20px 0;">
-            <div style="width:${(currentAdIndex / totalAds) * 100}%; height:100%; background:#3b82f6; border-radius:3px;"></div>
-          </div>
-          <p style="margin: 10px 0; color: var(--text-gray);">Complete all ${totalAds} ads to earn ${rewardAmount} points!</p>
-          <button class="watch-btn-large" id="watchBundleAdBtn" style="background:#3b82f6; color:white;">Watch Ad ${currentAdIndex + 1}</button>
-        </div>
-      `;
-      
-      document.body.appendChild(modal);
-      
-      const watchBtn = document.getElementById('watchBundleAdBtn');
-      if (watchBtn) {
-        watchBtn.onclick = () => {
-          modal.remove();
-          showMonetagAd(async (success) => {
-            if (success) {
-              currentAdIndex++;
-              const newAdLimit = { ...currentUser.adLimit, used: currentUser.adLimit.used + 1 };
-              await updateUserData({ adLimit: newAdLimit });
-              currentUser.adLimit.used++;
-              
-              if (currentAdIndex >= totalAds) {
-                await addEarnings(rewardAmount, `${totalAds} Ads Bundle`);
-                const newAdsWatched = (currentUser.adsWatched || 0) + totalAds;
-                await updateUserData({ adsWatched: newAdsWatched });
-                currentUser.adsWatched = newAdsWatched;
-                showToast(`🎉 You earned ${rewardAmount} points!`);
-              } else {
-                showAdModal();
-              }
-            } else {
-              showToast("Ad failed to load. Please try again.");
-            }
-          });
-        };
-      }
-    }
-    
-    showAdModal();
-  }
-
-  async function startDailyBonus() {
-    if (!currentUser || !globalSettings) return;
-    if (currentUser.dailyBonusClaimed) {
-      showToast("Already claimed today's bonus!");
-      return;
-    }
-    
-    if (currentUser.adLimit.used + globalSettings.dailyBonusAds > currentUser.adLimit.max) {
-      const remaining = currentUser.adLimit.max - currentUser.adLimit.used;
-      if (remaining <= 0) {
-        showToast("Daily ad limit reached!");
-        return;
-      }
-      showToast(`Only ${remaining} ads left today.`);
-      return;
-    }
-    
-    let currentAdIndex = 0;
-    const totalAds = globalSettings.dailyBonusAds;
-    const bonusReward = globalSettings.dailyBonusReward;
-    
-    function showAdModal() {
-      const modal = document.createElement('div');
-      modal.className = 'ad-modal';
-      modal.innerHTML = `
-        <div class="ad-modal-content">
-          <div style="font-size: 48px; margin-bottom: 10px;">🎁</div>
-          <h3>Daily Bonus</h3>
-          <div class="ad-counter">Ad ${currentAdIndex + 1} of ${totalAds}</div>
-          <div style="width:100%; height:6px; background:#e0e0e0; border-radius:3px; margin:20px 0;">
-            <div style="width:${(currentAdIndex / totalAds) * 100}%; height:100%; background:#f59e0b; border-radius:3px;"></div>
-          </div>
-          <p style="margin: 10px 0;">Watch all ${totalAds} ads to earn ${bonusReward} points!</p>
-          <button class="watch-btn-large" id="bonusAdBtn" style="background:#f59e0b; color:white;">Watch Ad ${currentAdIndex + 1}</button>
-        </div>
-      `;
-      
-      document.body.appendChild(modal);
-      
-      const watchBtn = document.getElementById('bonusAdBtn');
-      if (watchBtn) {
-        watchBtn.onclick = () => {
-          modal.remove();
-          showMonetagAd(async (success) => {
-            if (success) {
-              currentAdIndex++;
-              const newAdLimit = { ...currentUser.adLimit, used: currentUser.adLimit.used + 1 };
-              await updateUserData({ adLimit: newAdLimit });
-              currentUser.adLimit.used++;
-              
-              if (currentAdIndex >= totalAds) {
-                await addEarnings(bonusReward, "Daily Bonus");
-                const newAdsWatched = (currentUser.adsWatched || 0) + totalAds;
-                await updateUserData({ 
-                  adsWatched: newAdsWatched,
-                  dailyBonusClaimed: true 
-                });
-                currentUser.adsWatched = newAdsWatched;
-                currentUser.dailyBonusClaimed = true;
-                showToast(`🎉 You earned ${bonusReward} bonus points!`);
-              } else {
-                showAdModal();
-              }
-            } else {
-              showToast("Ad failed to load.");
-            }
-          });
-        };
-      }
-    }
-    
-    showAdModal();
-  }
-
-  async function completeTask(taskId) {
-    const tasks = currentUser.tasks || [];
-    const task = tasks.find(t => t.id === taskId);
-    if (!task || task.completed) {
-      showToast("Task already completed");
-      return;
-    }
-    task.completed = true;
-    await updateUserData({ tasks: tasks });
-    currentUser.tasks = tasks;
-    await addEarnings(task.reward, `Task: ${task.title}`);
-  }
-
-  // FIXED: Withdrawal function with proper ad showing
-  async function requestWithdrawWithAds(amount, method, accountNumber) {
-    if (!currentUser || !globalSettings) return false;
-    if (amount > currentUser.withdrawable) {
-      showToast("Insufficient balance");
-      return false;
-    }
-    if (amount < globalSettings.minWithdraw) {
-      showToast(`Minimum withdraw ₹${globalSettings.minWithdraw}`);
-      return false;
-    }
-    if (!accountNumber || accountNumber.trim() === "") {
-      showToast("Please enter account number");
-      return false;
-    }
-    
-    const remainingAds = currentUser.adLimit.max - currentUser.adLimit.used;
-    if (remainingAds < 4) {
-      showToast(`Need 4 verification ads. Only ${remainingAds} left.`);
-      return false;
-    }
-    
-    showToast("Starting verification. Please watch 4 ads.");
-    
-    let currentAdIndex = 0;
-    const totalAds = 4;
-    
-    function showAdModal(resolve) {
-      const modal = document.createElement('div');
-      modal.className = 'ad-modal';
-      modal.innerHTML = `
-        <div class="ad-modal-content">
-          <div style="font-size: 48px; margin-bottom: 10px;">🏧</div>
-          <h3>Withdrawal Verification</h3>
-          <div class="ad-counter">Ad ${currentAdIndex + 1} of ${totalAds}</div>
-          <div style="width:100%; height:6px; background:#e0e0e0; border-radius:3px; margin:20px 0;">
-            <div style="width:${(currentAdIndex / totalAds) * 100}%; height:100%; background:#10b981; border-radius:3px;"></div>
-          </div>
-          <p style="margin: 10px 0;">Watch verification ad ${currentAdIndex + 1} of ${totalAds}</p>
-          <button class="watch-btn-large" id="verifyAdBtn" style="background:#10b981; color:white;">Watch Ad ${currentAdIndex + 1}</button>
-          <button id="cancelWithdrawBtn" style="background:#ef4444; color:white; border:none; padding:10px; border-radius:40px; margin-top:12px; width:100%; cursor:pointer;">Cancel</button>
-        </div>
-      `;
-      
-      document.body.appendChild(modal);
-      
-      const watchBtn = document.getElementById('verifyAdBtn');
-      if (watchBtn) {
-        watchBtn.onclick = () => {
-          modal.remove();
-          showMonetagAd(async (success) => {
-            if (success) {
-              currentAdIndex++;
-              const newAdLimit = { ...currentUser.adLimit, used: currentUser.adLimit.used + 1 };
-              await updateUserData({ adLimit: newAdLimit });
-              currentUser.adLimit.used++;
-              
-              if (currentAdIndex >= totalAds) {
-                resolve(true);
-              } else {
-                showAdModal(resolve);
-              }
-            } else {
-              showToast("Ad failed to load. Please try again.");
-              resolve(false);
-            }
-          });
-        };
-      }
-      
-      const cancelBtn = document.getElementById('cancelWithdrawBtn');
-      if (cancelBtn) {
-        cancelBtn.onclick = () => {
-          modal.remove();
-          showToast("Withdrawal cancelled");
-          resolve(false);
-        };
-      }
-    }
-    
-    const success = await new Promise((resolve) => { showAdModal(resolve); });
-    
-    if (success) {
-      const newWithdrawable = currentUser.withdrawable - amount;
-      const newTotalBalance = currentUser.totalBalance - amount;
-      
-      await updateUserData({
-        withdrawable: newWithdrawable,
-        totalBalance: newTotalBalance
-      });
-      
-      const withdrawal = {
-        amount: amount,
-        status: "Completed",
-        date: new Date().toLocaleDateString(),
-        method: method,
-        accountNumber: accountNumber,
-        timestamp: Date.now()
-      };
-      
-      try {
-        await database.ref(`users/${userId}/withdrawals`).push(withdrawal);
-      } catch(e) {}
-      
-      if (!currentUser.withdrawals) currentUser.withdrawals = [];
-      currentUser.withdrawals.unshift(withdrawal);
-      await addTransaction(`Withdraw to ${method}`, -amount);
-      
-      currentUser.withdrawable = newWithdrawable;
-      currentUser.totalBalance = newTotalBalance;
-      
-      showToast(`✅ Withdrawal of ₹${amount} processed!`);
-      render();
-      return true;
-    }
-    return false;
-  }
-
-  async function initUser() {
-    await loadSettings();
-    
+  // ========== GET OR CREATE USER ==========
+  async function getOrCreateUser() {
+    // Try to get user from Telegram first
+    const tg = window.Telegram?.WebApp;
     const telegramUser = tg?.initDataUnsafe?.user;
-    const uid = telegramUser?.id?.toString() || `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    userId = uid;
     
+    // Generate unique user ID (from Telegram or random)
+    if (telegramUser?.id) {
+      userId = `tg_${telegramUser.id}`;
+    } else {
+      // Check if user exists in localStorage for persistence
+      const savedUserId = localStorage.getItem('selfbot_userId');
+      if (savedUserId) {
+        userId = savedUserId;
+      } else {
+        userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`;
+        localStorage.setItem('selfbot_userId', userId);
+      }
+    }
+
     try {
       const userRef = database.ref(`users/${userId}`);
       const snapshot = await userRef.once('value');
       const userData = snapshot.val();
-      
+
       if (!userData) {
-        currentUser = {
+        // Create new user
+        const newUser = {
           name: telegramUser?.first_name || "User",
-          level: 1,
-          totalBalance: globalSettings.signupBonus,
-          withdrawable: globalSettings.signupBonus,
-          todayEarnings: globalSettings.signupBonus,
-          totalEarnings: globalSettings.signupBonus,
-          adsWatched: 0,
-          dailyStreak: 1,
-          referralCount: 0,
-          referralEarnings: 0,
-          referralLink: `https://t.me/infiniiearn_bot?start=${userId}`,
-          adLimit: { used: 0, max: globalSettings.dailyAdLimit },
-          tasks: [
-            { id: 1, title: "Follow on Twitter", reward: 2.00, completed: false, icon: "🐦" },
-            { id: 2, title: "Join Telegram Channel", reward: 3.00, completed: false, icon: "📢" },
-            { id: 3, title: "Visit Website", reward: 1.50, completed: false, icon: "🌐" }
-          ],
-          dailyBonusClaimed: false,
-          transactions: [{ type: "Signup Bonus", amount: globalSettings.signupBonus, date: new Date().toLocaleString() }],
-          withdrawals: []
+          totalClicks: 0,
+          dailyClicks: 0,
+          totalEarned: 0,
+          lastDate: new Date().toDateString(),
+          createdAt: Date.now()
         };
-        await userRef.set(currentUser);
-        showToast(`Welcome! You got ₹${globalSettings.signupBonus} bonus!`);
+        await userRef.set(newUser);
+        currentUser = newUser;
       } else {
         currentUser = userData;
-        if (!currentUser.tasks) {
-          currentUser.tasks = [
-            { id: 1, title: "Follow on Twitter", reward: 2.00, completed: false, icon: "🐦" },
-            { id: 2, title: "Join Telegram Channel", reward: 3.00, completed: false, icon: "📢" },
-            { id: 3, title: "Visit Website", reward: 1.50, completed: false, icon: "🌐" }
-          ];
+        
+        // Check if date changed (reset daily counter)
+        const today = new Date().toDateString();
+        if (currentUser.lastDate !== today) {
+          currentUser.dailyClicks = 0;
+          currentUser.lastDate = today;
+          await userRef.update({ dailyClicks: 0, lastDate: today });
         }
-        if (!currentUser.adLimit) currentUser.adLimit = { used: 0, max: globalSettings.dailyAdLimit };
-        if (!currentUser.transactions) currentUser.transactions = [];
-        if (!currentUser.withdrawals) currentUser.withdrawals = [];
       }
+      return true;
     } catch (error) {
-      console.error("Firebase init error, using fallback:", error);
-      currentUser = {
-        name: telegramUser?.first_name || "User",
-        level: 1,
-        totalBalance: 10,
-        withdrawable: 10,
-        todayEarnings: 10,
-        totalEarnings: 10,
-        adsWatched: 0,
-        dailyStreak: 1,
-        referralCount: 0,
-        referralEarnings: 0,
-        referralLink: `https://t.me/infiniiearn_bot?start=${userId}`,
-        adLimit: { used: 0, max: 20 },
-        tasks: [
-          { id: 1, title: "Follow on Twitter", reward: 2.00, completed: false, icon: "🐦" },
-          { id: 2, title: "Join Telegram Channel", reward: 3.00, completed: false, icon: "📢" },
-          { id: 3, title: "Visit Website", reward: 1.50, completed: false, icon: "🌐" }
-        ],
-        dailyBonusClaimed: false,
-        transactions: [],
-        withdrawals: []
-      };
+      console.error("Firebase error:", error);
+      showToast("Connection error. Please try again.", true);
+      return false;
     }
+  }
+
+  // ========== LOAD SETTINGS FROM FIREBASE ==========
+  async function loadSettings() {
+    try {
+      const settingsRef = database.ref('settings');
+      const snapshot = await settingsRef.once('value');
+      const savedSettings = snapshot.val();
+      
+      if (savedSettings) {
+        settings = {
+          rewardPerAd: savedSettings.rewardPerAd ?? 0.50,
+          dailyLimit: savedSettings.dailyLimit ?? 50,
+          adLink: savedSettings.adLink ?? "https://www.google.com",
+          adPlatform: savedSettings.adPlatform ?? "Monetag"
+        };
+      } else {
+        // Save default settings to Firebase
+        await settingsRef.set(settings);
+      }
+      return true;
+    } catch (error) {
+      console.error("Error loading settings:", error);
+      return false;
+    }
+  }
+
+  // ========== SAVE SETTINGS TO FIREBASE ==========
+  async function saveSettings() {
+    try {
+      await database.ref('settings').update({
+        rewardPerAd: settings.rewardPerAd,
+        dailyLimit: settings.dailyLimit,
+        adLink: settings.adLink,
+        adPlatform: settings.adPlatform
+      });
+      return true;
+    } catch (error) {
+      console.error("Error saving settings:", error);
+      return false;
+    }
+  }
+
+  // ========== UPDATE USER DATA ==========
+  async function updateUserData(updates) {
+    if (!userId) return false;
+    try {
+      await database.ref(`users/${userId}`).update(updates);
+      if (currentUser) Object.assign(currentUser, updates);
+      return true;
+    } catch (error) {
+      console.error("Error updating user:", error);
+      return false;
+    }
+  }
+
+  // ========== SHOW TOAST MESSAGE ==========
+  function showToast(message, isError = false) {
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerText = message;
+    if (isError) toast.style.borderLeftColor = '#ef4444';
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 2000);
+  }
+
+  // ========== OPEN AD LINK ==========
+  async function openAdLink() {
+    if (!currentUser) return;
+    
+    // Check daily limit
+    if (currentUser.dailyClicks >= settings.dailyLimit) {
+      showToast(`⚠️ Daily limit reached! Max ${settings.dailyLimit} ads per day.`, true);
+      return;
+    }
+
+    // Open the ad link in a new tab
+    const adWindow = window.open(settings.adLink, '_blank');
+    if (!adWindow) {
+      window.location.href = settings.adLink;
+    }
+    
+    // After 2 seconds, give reward
+    setTimeout(async () => {
+      const reward = settings.rewardPerAd;
+      
+      const newTotalClicks = (currentUser.totalClicks || 0) + 1;
+      const newDailyClicks = (currentUser.dailyClicks || 0) + 1;
+      const newTotalEarned = (currentUser.totalEarned || 0) + reward;
+      
+      await updateUserData({
+        totalClicks: newTotalClicks,
+        dailyClicks: newDailyClicks,
+        totalEarned: newTotalEarned
+      });
+      
+      showToast(`+₹${reward.toFixed(2)} earned!`);
+      render();
+      
+      // Haptic feedback
+      if (window.Telegram?.WebApp) {
+        window.Telegram.WebApp.HapticFeedback.impactOccurred('light');
+      }
+    }, 2000);
+  }
+
+  // ========== RESET USER DATA ==========
+  async function resetUserData() {
+    if (confirm('⚠️ Are you sure? This will reset all your earnings and click counts!')) {
+      await updateUserData({
+        totalClicks: 0,
+        dailyClicks: 0,
+        totalEarned: 0,
+        lastDate: new Date().toDateString()
+      });
+      showToast('All data reset successfully!');
+      render();
+    }
+  }
+
+  // ========== ADMIN FUNCTIONS ==========
+  function adminLogin(password) {
+    if (password === ADMIN_PASSWORD) {
+      adminLoggedIn = true;
+      showAdminPanel = true;
+      showToast('Admin logged in successfully!');
+      render();
+    } else {
+      showToast('Wrong admin password!', true);
+    }
+  }
+
+  function adminLogout() {
+    adminLoggedIn = false;
+    showAdminPanel = false;
+    showToast('Admin logged out');
     render();
   }
 
-  const leaderboardData = [
-    { name: "Rakib Hasan", amount: 15750.80, rank: 1 },
-    { name: "Shohan Ahmed", amount: 12850.60, rank: 2 },
-    { name: "Jannat Islam", amount: 10250.30, rank: 3 },
-    { name: "Mim Akter", amount: 8750.20, rank: 4 }
-  ];
-
-  function renderDashboard() {
-    const remainingAds = currentUser.adLimit.max - currentUser.adLimit.used;
-    
-    return `
-      <div class="page">
-        <div class="balance-card">
-          <div class="balance-label">Total Balance</div>
-          <div class="balance-amount">₹${currentUser.totalBalance.toFixed(2)}</div>
-          <div class="balance-stats">
-            <div class="balance-stat"><div class="balance-stat-value">₹${currentUser.withdrawable.toFixed(2)}</div><div class="balance-stat-label">Withdrawable</div></div>
-            <div class="balance-stat"><div class="balance-stat-value">₹${currentUser.todayEarnings.toFixed(2)}</div><div class="balance-stat-label">Today's Earnings</div></div>
-            <div class="balance-stat"><div class="balance-stat-value">₹${currentUser.totalEarnings.toFixed(2)}</div><div class="balance-stat-label">Total Earnings</div></div>
-          </div>
-        </div>
-
-        <div class="stats-grid">
-          <div class="stat-card"><div class="stat-icon">📺</div><div class="stat-title">Ads Watched</div><div class="stat-number">${currentUser.adsWatched}</div></div>
-          <div class="stat-card"><div class="stat-icon">🔥</div><div class="stat-title">Daily Streak</div><div class="stat-number">${currentUser.dailyStreak} Days</div></div>
-          <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-title">Referral Earnings</div><div class="stat-number">₹${currentUser.referralEarnings.toFixed(2)}</div></div>
-          <div class="stat-card"><div class="stat-icon">⭐</div><div class="stat-title">Available Ads</div><div class="stat-number">${remainingAds}/${currentUser.adLimit.max}</div></div>
-        </div>
-
-        <div class="section">
-          <div class="section-header"><div class="section-title">Watch Ads</div><div class="section-link">Resets at midnight</div></div>
-          <div class="ads-card">
-            <div class="progress-bar"><div class="progress-fill" style="width: ${(currentUser.adLimit.used / currentUser.adLimit.max) * 100}%"></div></div>
-            <div class="ad-button" id="watchAdsBtn">
-              <div class="ad-button-info">
-                <div class="ad-button-title">Watch ${globalSettings?.adsPerBundle || 3} Ads Bundle</div>
-                <div class="ad-button-price">+${globalSettings?.adReward || 30} Points</div>
-                <div class="ad-button-sub">Watch Monetag ads and earn instantly!</div>
-              </div>
-              <div class="watch-btn-large">Watch Now</div>
-            </div>
-            <div class="ad-warning">🎬 Powered by Monetag - Watch ads to earn points!</div>
-          </div>
-        </div>
-
-        <div class="section">
-          <div class="section-header"><div class="section-title">🏆 Top Earners</div></div>
-          <div class="leaderboard-list">
-            ${leaderboardData.map(item => `
-              <div class="leaderboard-item">
-                <div class="rank rank-${item.rank === 1 ? '1' : (item.rank === 2 ? '2' : '3')}">${item.rank}</div>
-                <div class="leaderboard-name">${item.name}</div>
-                <div class="leaderboard-amount">₹${item.amount.toFixed(2)}</div>
-              </div>
-            `).join('')}
-          </div>
-        </div>
-      </div>
-    `;
+  async function updateReward(value) {
+    let newReward = parseFloat(value);
+    if (isNaN(newReward) || newReward < 0) newReward = 0.50;
+    settings.rewardPerAd = newReward;
+    await saveSettings();
+    showToast(`✅ Reward updated to ₹${newReward.toFixed(2)} per ad`);
+    render();
   }
 
-  function renderTasks() {
-    const bonusStatus = currentUser.dailyBonusClaimed ? "✅ Claimed" : "🎁 Available";
-    
-    return `
-      <div class="page">
-        <div class="section"><div class="section-title">🎯 Tasks Center</div></div>
-        ${currentUser.tasks.map(task => `
-          <div class="ads-card" style="margin: 0 16px 12px 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div>
-                <span style="font-size: 28px;">${task.icon}</span>
-                <span style="font-weight: 600; margin-left: 12px;">${task.title}</span>
-                <div style="font-size: 13px; color: var(--green); margin-top: 4px;">+₹${task.reward}</div>
-              </div>
-              ${task.completed ? '<span style="color: var(--green);">✅ Completed</span>' : `<button class="task-btn" data-task-id="${task.id}">Complete</button>`}
-            </div>
-          </div>
-        `).join('')}
-        
-        <div class="ads-card" style="margin: 0 16px;">
-          <div style="margin-bottom: 12px;"><strong>🎁 Daily Bonus</strong> <span style="float:right">${bonusStatus}</span></div>
-          <div style="background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 16px; padding: 16px;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <div style="color: white;">
-                <div style="font-weight: 700;">Watch ${globalSettings?.dailyBonusAds || 4} Ads</div>
-                <div style="font-size: 20px; font-weight: 800;">+${globalSettings?.dailyBonusReward || 10} Points</div>
-                <div style="font-size: 11px;">Powered by Monetag</div>
-              </div>
-              ${!currentUser.dailyBonusClaimed ? 
-                `<button id="dailyBonusBtn" style="background: white; color: #d97706; border: none; padding: 10px 20px; border-radius: 40px; font-weight: 700;">Claim</button>` :
-                `<div style="background: rgba(255,255,255,0.3); padding: 10px 20px; border-radius: 40px;">Claimed</div>`
-              }
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
+  async function updateLimit(value) {
+    let newLimit = parseInt(value);
+    if (isNaN(newLimit) || newLimit < 1) newLimit = 50;
+    settings.dailyLimit = newLimit;
+    await saveSettings();
+    showToast(`✅ Daily limit updated to ${newLimit} ads`);
+    render();
   }
 
-  function renderWallet() {
-    return `
-      <div class="page">
-        <div class="balance-card">
-          <div class="balance-label">Available Balance</div>
-          <div class="balance-amount">₹${currentUser.withdrawable.toFixed(2)}</div>
-          <div class="balance-stats">
-            <div class="balance-stat"><div class="balance-stat-value">₹${(currentUser.totalBalance - currentUser.withdrawable).toFixed(2)}</div><div class="balance-stat-label">Pending</div></div>
-            <div class="balance-stat"><div class="balance-stat-value">₹${currentUser.totalEarnings.toFixed(2)}</div><div class="balance-stat-label">Total Earned</div></div>
-          </div>
-        </div>
-        <div class="section"><div class="section-title">Transaction History</div></div>
-        <div class="leaderboard-list" style="margin: 0 16px;">
-          ${(currentUser.transactions || []).slice(0, 5).map(tx => `
-            <div class="leaderboard-item">
-              <div class="leaderboard-name">${tx.type}</div>
-              <div class="leaderboard-amount" style="color: ${tx.amount > 0 ? '#10b981' : '#ef4444'}">${tx.amount > 0 ? `+₹${tx.amount}` : `-₹${Math.abs(tx.amount)}`}</div>
-              <div style="font-size: 11px;">${tx.date}</div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    `;
+  async function updateAdLink(value) {
+    if (!value || value.trim() === "") {
+      showToast('Please enter a valid URL', true);
+      return;
+    }
+    let newLink = value.trim();
+    if (!newLink.startsWith('http://') && !newLink.startsWith('https://')) {
+      newLink = 'https://' + newLink;
+    }
+    settings.adLink = newLink;
+    await saveSettings();
+    showToast(`✅ Ad link updated! Users will now be redirected to: ${newLink}`);
+    render();
   }
 
-  function renderWithdraw() {
-    return `
-      <div class="page">
-        <div class="balance-card">
-          <div class="balance-label">Withdrawable Balance</div>
-          <div class="balance-amount">₹${currentUser.withdrawable.toFixed(2)}</div>
-          <div class="ad-warning">🎬 Requires watching 4 Monetag verification ads</div>
-        </div>
-        <div class="ads-card" style="margin: 0 16px;">
-          <label>Amount (Min ₹${globalSettings?.minWithdraw || 50})</label>
-          <input type="number" id="withdrawAmount" placeholder="Enter amount">
-          <label>Account Number</label>
-          <input type="text" id="accountNumber" placeholder="Enter account number">
-          <label>Payment Method</label>
-          <select id="withdrawMethod">
-            <option value="bKash">bKash</option><option value="Nagad">Nagad</option><option value="Rocket">Rocket</option><option value="Binance Pay">Binance Pay</option>
-          </select>
-          <button id="submitWithdraw" class="btn-primary">Request Withdrawal (Watch 4 Ads)</button>
-        </div>
-        <div class="section"><div class="section-title">Withdrawal History</div></div>
-        <div class="leaderboard-list" style="margin: 0 16px;">
-          ${(currentUser.withdrawals || []).slice(0, 5).map(w => `
-            <div class="leaderboard-item">
-              <div class="leaderboard-name">${w.method} - ${w.accountNumber}</div>
-              <div style="color: ${w.status === 'Completed' ? '#10b981' : '#f59e0b'}">${w.status || 'Completed'}</div>
-              <div>₹${w.amount}</div>
-            </div>
-          `).join('')}
-        </div>
-      </div>
-    `;
+  async function updateAdPlatform(value) {
+    if (!value || value.trim() === "") {
+      showToast('Please enter platform name', true);
+      return;
+    }
+    settings.adPlatform = value.trim();
+    await saveSettings();
+    showToast(`✅ Ad platform updated to: ${settings.adPlatform}`);
+    render();
   }
 
-  function renderReferral() {
-    return `
-      <div class="page">
-        <div class="balance-card">
-          <div class="balance-label">Referral Earnings</div>
-          <div class="balance-amount">₹${currentUser.referralEarnings.toFixed(2)}</div>
-          <div class="balance-stats"><div class="balance-stat"><div class="balance-stat-value">${currentUser.referralCount}</div><div class="balance-stat-label">Total Referrals</div></div></div>
-        </div>
-        <div class="referral-card" style="margin: 0 16px;">
-          <div class="referral-link-box">
-            <span style="font-size: 11px;">${currentUser.referralLink}</span>
-            <button class="copy-btn" id="copyLinkBtn2">Copy</button>
-          </div>
-          <button class="btn-primary" id="inviteBtn">Invite Friends</button>
-        </div>
-        <div class="section"><div class="section-title">Referral Leaderboard</div></div>
-        <div class="leaderboard-list" style="margin: 0 16px;">
-          ${leaderboardData.map(item => `<div class="leaderboard-item"><div class="rank rank-${item.rank === 1 ? '1' : (item.rank === 2 ? '2' : '3')}">${item.rank}</div><div class="leaderboard-name">${item.name}</div><div class="leaderboard-amount">₹${item.amount.toFixed(2)}</div></div>`).join('')}
-        </div>
-      </div>
-    `;
+  async function resetAllUserData() {
+    if (confirm('⚠️ WARNING: This will reset ALL users earnings and ad counts! Are you sure?')) {
+      try {
+        const usersRef = database.ref('users');
+        const snapshot = await usersRef.once('value');
+        const updates = {};
+        snapshot.forEach((child) => {
+          updates[`${child.key}/totalClicks`] = 0;
+          updates[`${child.key}/dailyClicks`] = 0;
+          updates[`${child.key}/totalEarned`] = 0;
+          updates[`${child.key}/lastDate`] = new Date().toDateString();
+        });
+        await usersRef.update(updates);
+        if (currentUser) {
+          currentUser.totalClicks = 0;
+          currentUser.dailyClicks = 0;
+          currentUser.totalEarned = 0;
+          currentUser.lastDate = new Date().toDateString();
+        }
+        showToast('All user data has been reset!');
+        render();
+      } catch (error) {
+        console.error("Error resetting data:", error);
+        showToast("Error resetting data", true);
+      }
+    }
   }
 
-  function renderProfile() {
-    return `
-      <div class="page">
-        <div class="balance-card">
-          <div style="display: flex; align-items: center; gap: 16px;">
-            <div class="avatar">${currentUser.name.charAt(0)}</div>
-            <div><div style="font-size: 20px; font-weight: 700;">${currentUser.name}</div><div class="level-badge">Level ${currentUser.level}</div></div>
-          </div>
-          <div class="balance-stats" style="margin-top: 20px;">
-            <div class="balance-stat"><div class="balance-stat-value">${currentUser.dailyStreak} Days</div><div class="balance-stat-label">Streak</div></div>
-            <div class="balance-stat"><div class="balance-stat-value">${currentUser.adsWatched}</div><div class="balance-stat-label">Ads Watched</div></div>
-          </div>
-        </div>
-        <div class="ads-card" style="margin: 0 16px;">
-          <div><strong>Account Status</strong>: Active ✅</div>
-          <div><strong>User ID</strong>: ${userId?.substr(0, 12)}...</div>
-          <button id="darkModeToggle" class="btn-primary">🌓 Dark / Light Mode</button>
-        </div>
-      </div>
-    `;
+  // ========== GET REMAINING ADS ==========
+  function getRemainingAds() {
+    if (!currentUser) return 0;
+    return Math.max(0, settings.dailyLimit - (currentUser.dailyClicks || 0));
   }
 
-  function render() {
+  // ========== RENDER UI ==========
+  async function render() {
     if (!currentUser) return;
     
     const app = document.getElementById('app');
-    let content = "";
+    const remainingAds = getRemainingAds();
+    const progressPercent = ((currentUser.dailyClicks || 0) / settings.dailyLimit) * 100;
     
-    switch(currentPage) {
-      case "dashboard": content = renderDashboard(); break;
-      case "tasks": content = renderTasks(); break;
-      case "wallet": content = renderWallet(); break;
-      case "withdraw": content = renderWithdraw(); break;
-      case "referral": content = renderReferral(); break;
-      case "profile": content = renderProfile(); break;
-      default: content = renderDashboard();
-    }
-
-    const navHtml = `
-      <div class="bottom-nav">
-        <button class="nav-item ${currentPage === 'dashboard' ? 'active' : ''}" data-page="dashboard"><span class="nav-icon">🏠</span><span>Home</span></button>
-        <button class="nav-item ${currentPage === 'tasks' ? 'active' : ''}" data-page="tasks"><span class="nav-icon">🎯</span><span>Tasks</span></button>
-        <button class="nav-item ${currentPage === 'wallet' ? 'active' : ''}" data-page="wallet"><span class="nav-icon">💰</span><span>Wallet</span></button>
-        <button class="nav-item ${currentPage === 'withdraw' ? 'active' : ''}" data-page="withdraw"><span class="nav-icon">🏧</span><span>Withdraw</span></button>
-        <button class="nav-item ${currentPage === 'referral' ? 'active' : ''}" data-page="referral"><span class="nav-icon">👥</span><span>Refer</span></button>
-        <button class="nav-item ${currentPage === 'profile' ? 'active' : ''}" data-page="profile"><span class="nav-icon">👤</span><span>Profile</span></button>
-      </div>
-    `;
-
     app.innerHTML = `
       <div class="header">
-        <div class="header-top">
-          <div class="logo-section"><h1>💰 Infinity Earn</h1><p>Earn Money Watching Ads</p></div>
-          <div class="user-info"><span class="level-badge">Level ${currentUser.level}</span><div class="avatar">${currentUser.name.charAt(0)}</div></div>
+        <h1>🤖 Self Click Bot</h1>
+        <p>Watch ads & earn money automatically</p>
+      </div>
+
+      <!-- Main Card -->
+      <div class="card">
+        <div class="stats">
+          <div class="label">TODAY'S ADS WATCHED</div>
+          <div class="count">${currentUser.dailyClicks || 0} / ${settings.dailyLimit}</div>
+          <div class="sub">${remainingAds} ads remaining today</div>
+        </div>
+
+        <div class="progress-container">
+          <div class="progress-label">
+            <span>Daily Progress</span>
+            <span>${Math.round(progressPercent)}%</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${progressPercent}%;"></div>
+          </div>
+        </div>
+
+        <div class="reward-info">
+          <span style="font-size:12px;">💰 Reward per ad</span>
+          <div class="reward-amount">₹${settings.rewardPerAd.toFixed(2)}</div>
+          <span style="font-size:10px; color:#6a75a0;">📢 Powered by ${settings.adPlatform}</span>
+        </div>
+
+        <button class="watch-btn" id="watchBtn" ${remainingAds === 0 ? 'disabled' : ''}>
+          ${remainingAds === 0 ? '🎉 Daily Limit Reached' : `📺 Watch ${settings.adPlatform} Ad & Earn`}
+        </button>
+
+        <div style="font-size:11px; color:#6a75a0; text-align:center;">
+          ⚡ Click the button above to watch an ad and earn money
         </div>
       </div>
-      ${content}
-      ${navHtml}
+
+      <!-- Total Earnings Card -->
+      <div class="earned-card">
+        <div class="earned-label">💰 TOTAL EARNINGS</div>
+        <div class="earned-amount">₹${(currentUser.totalEarned || 0).toFixed(2)}</div>
+        <div class="earned-label" style="margin-top:8px;">📺 Total Ads Watched: ${currentUser.totalClicks || 0}</div>
+      </div>
+
+      <!-- Reset Button for User -->
+      <button class="admin-toggle" id="resetUserBtn" style="background: rgba(239,68,68,0.2); border-color:#ef4444; color:#ef4444;">
+        🔄 Reset My Data
+      </button>
+
+      <!-- Admin Login / Panel Toggle -->
+      ${!adminLoggedIn ? `
+        <div style="margin-top: 16px;">
+          <button class="admin-toggle" id="toggleAdminBtn">🔐 Admin Login</button>
+          <div id="adminLoginPanel" style="display: none; margin-top: 12px;">
+            <input type="password" id="adminPasswordInput" placeholder="Enter admin password" style="width:100%; background:#0c1222; border:1px solid #2d3a5e; padding:12px; border-radius:16px; color:white; margin-bottom:8px;">
+            <button id="adminLoginSubmitBtn" style="background:#2a6df5; border:none; padding:10px; border-radius:40px; color:white; width:100%;">Login</button>
+          </div>
+        </div>
+      ` : `
+        <button class="admin-toggle" id="toggleAdminPanelBtn">🛠️ ${showAdminPanel ? 'Hide' : 'Show'} Admin Panel</button>
+        
+        <div class="admin-panel ${showAdminPanel ? 'show' : ''}" id="adminPanel">
+          <div class="admin-title">⚙️ Admin Control Panel (Firebase)</div>
+          
+          <div class="input-group">
+            <label>💰 Reward Per Ad (₹)</label>
+            <input type="number" id="rewardInput" step="0.10" value="${settings.rewardPerAd}" placeholder="Enter reward amount">
+            <button class="admin-btn" id="updateRewardBtn">Update Reward</button>
+          </div>
+          
+          <div class="input-group">
+            <label>📊 Daily Ad Limit</label>
+            <input type="number" id="limitInput" value="${settings.dailyLimit}" placeholder="Enter daily limit">
+            <button class="admin-btn" id="updateLimitBtn">Update Daily Limit</button>
+          </div>
+          
+          <div class="input-group">
+            <label>🔗 Ad Link (Users will be redirected here)</label>
+            <textarea id="adLinkInput" rows="2" placeholder="Enter ad link URL">${settings.adLink}</textarea>
+            <button class="admin-btn" id="updateAdLinkBtn">Update Ad Link</button>
+            <div class="ad-link-display">Current: ${settings.adLink.substring(0, 50)}${settings.adLink.length > 50 ? '...' : ''}</div>
+          </div>
+          
+          <div class="input-group">
+            <label>🏷️ Ad Platform Name</label>
+            <input type="text" id="platformInput" value="${settings.adPlatform}" placeholder="e.g., Monetag, Google Ads">
+            <button class="admin-btn" id="updatePlatformBtn">Update Platform Name</button>
+          </div>
+          
+          <hr style="border-color:#2d3a5e; margin: 16px 0;">
+          
+          <button class="admin-btn admin-btn-danger" id="resetAllDataBtn">🔄 Reset ALL Users Data</button>
+          <button class="admin-btn admin-btn-warning" id="logoutAdminBtn" style="margin-top:8px;">🚪 Logout from Admin</button>
+        </div>
+      `}
+
+      <div class="footer">
+        Self Click Bot • Data stored in Firebase Cloud
+      </div>
     `;
 
-    // Bind Events
-    document.querySelectorAll('.nav-item').forEach(btn => {
-      btn.addEventListener('click', () => {
-        currentPage = btn.dataset.page;
-        render();
-        if (tg) tg.HapticFeedback?.impactOccurred('soft');
-      });
-    });
-
-    const watchAdsBtn = document.getElementById('watchAdsBtn');
-    if (watchAdsBtn) watchAdsBtn.addEventListener('click', () => startWatchingAds());
-
-    const dailyBonusBtn = document.getElementById('dailyBonusBtn');
-    if (dailyBonusBtn) dailyBonusBtn.addEventListener('click', () => startDailyBonus());
-
-    document.querySelectorAll('[data-task-id]').forEach(btn => {
-      const taskId = parseInt(btn.dataset.taskId);
-      if (taskId) btn.addEventListener('click', () => completeTask(taskId));
-    });
-
-    const copyBtn2 = document.getElementById('copyLinkBtn2');
-    if (copyBtn2) copyBtn2.onclick = () => { navigator.clipboard.writeText(currentUser.referralLink); showToast("Link copied!"); };
+    // Bind events
+    document.getElementById('watchBtn')?.addEventListener('click', openAdLink);
+    document.getElementById('resetUserBtn')?.addEventListener('click', resetUserData);
     
-    const submitWithdrawBtn = document.getElementById('submitWithdraw');
-    if (submitWithdrawBtn) {
-      submitWithdrawBtn.onclick = () => {
-        const amount = parseFloat(document.getElementById('withdrawAmount')?.value);
-        const method = document.getElementById('withdrawMethod')?.value;
-        const accountNumber = document.getElementById('accountNumber')?.value;
-        if (amount && method && accountNumber) {
-          requestWithdrawWithAds(amount, method, accountNumber);
-        } else if (!accountNumber) {
-          showToast("Please enter account number");
-        } else if (!amount) {
-          showToast("Please enter amount");
-        }
-      };
-    }
-    
-    const inviteBtn = document.getElementById('inviteBtn');
-    if (inviteBtn) inviteBtn.onclick = () => { navigator.clipboard.writeText(currentUser.referralLink); showToast("Link copied!"); };
-  }
-
-  function initTheme() {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') document.body.classList.add('dark');
-    document.addEventListener('click', (e) => {
-      if (e.target.id === 'darkModeToggle') {
-        document.body.classList.toggle('dark');
-        localStorage.setItem('theme', document.body.classList.contains('dark') ? 'dark' : 'light');
+    if (!adminLoggedIn) {
+      const toggleAdminBtn = document.getElementById('toggleAdminBtn');
+      const adminLoginPanel = document.getElementById('adminLoginPanel');
+      
+      if (toggleAdminBtn) {
+        toggleAdminBtn.addEventListener('click', () => {
+          if (adminLoginPanel.style.display === 'none') {
+            adminLoginPanel.style.display = 'block';
+          } else {
+            adminLoginPanel.style.display = 'none';
+          }
+        });
       }
-    });
+      
+      const loginSubmitBtn = document.getElementById('adminLoginSubmitBtn');
+      if (loginSubmitBtn) {
+        loginSubmitBtn.addEventListener('click', () => {
+          const password = document.getElementById('adminPasswordInput')?.value;
+          adminLogin(password);
+        });
+      }
+    } else {
+      const toggleAdminPanelBtn = document.getElementById('toggleAdminPanelBtn');
+      if (toggleAdminPanelBtn) {
+        toggleAdminPanelBtn.addEventListener('click', () => {
+          showAdminPanel = !showAdminPanel;
+          render();
+        });
+      }
+      
+      document.getElementById('updateRewardBtn')?.addEventListener('click', () => {
+        const input = document.getElementById('rewardInput');
+        updateReward(input.value);
+      });
+      
+      document.getElementById('updateLimitBtn')?.addEventListener('click', () => {
+        const input = document.getElementById('limitInput');
+        updateLimit(input.value);
+      });
+      
+      document.getElementById('updateAdLinkBtn')?.addEventListener('click', () => {
+        const input = document.getElementById('adLinkInput');
+        updateAdLink(input.value);
+      });
+      
+      document.getElementById('updatePlatformBtn')?.addEventListener('click', () => {
+        const input = document.getElementById('platformInput');
+        updateAdPlatform(input.value);
+      });
+      
+      document.getElementById('resetAllDataBtn')?.addEventListener('click', resetAllUserData);
+      document.getElementById('logoutAdminBtn')?.addEventListener('click', adminLogout);
+    }
   }
-  
-  initTheme();
-  initUser();
+
+  // ========== TELEGRAM WEBAPP INIT ==========
+  function initTelegram() {
+    if (window.Telegram?.WebApp) {
+      const tg = window.Telegram.WebApp;
+      tg.expand();
+      tg.enableClosingConfirmation();
+      tg.setHeaderColor('bg_color');
+      tg.setBackgroundColor('#0a0f1e');
+    }
+  }
+
+  // ========== INITIALIZE APP ==========
+  async function init() {
+    initTelegram();
+    
+    // Show loading
+    document.getElementById('app').innerHTML = '<div class="loading">Loading...</div>';
+    
+    // Load data from Firebase
+    const settingsLoaded = await loadSettings();
+    const userLoaded = await getOrCreateUser();
+    
+    if (settingsLoaded && userLoaded) {
+      render();
+    } else {
+      document.getElementById('app').innerHTML = `
+        <div class="card" style="text-align:center; padding:40px;">
+          <h3>⚠️ Connection Error</h3>
+          <p style="margin-top:12px;">Unable to connect to Firebase. Please check your internet connection and try again.</p>
+          <button onclick="location.reload()" style="margin-top:20px; background:#2a6df5; border:none; padding:12px 24px; border-radius:40px; color:white;">Retry</button>
+        </div>
+      `;
+    }
+  }
+
+  // Start the app
+  init();
 </script>
 </body>
 </html>
