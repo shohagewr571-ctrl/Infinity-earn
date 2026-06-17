@@ -178,9 +178,10 @@
     
     <script>
     document.addEventListener('DOMContentLoaded', () => {
-        // ─── TELEGRAM USER DATA (FIXED) ──────────────────────────────
-        let tgUser = null;
+        
+        // ─── 1. TELEGRAM USER DATA (FIXED) ──────────────────────────────
         let tg = null;
+        let tgUser = null;
         
         try {
             tg = window.Telegram.WebApp;
@@ -195,34 +196,33 @@
                     first_name: userData.first_name || '',
                     last_name: userData.last_name || '',
                     username: userData.username || '',
-                    photo_url: userData.photo_url || `https://ui-avatars.com/api/?name=${userData.first_name || 'U'}&background=E74C3C&color=fff&size=128`
+                    photo_url: userData.photo_url || ''
                 };
-                console.log('✅ Telegram User Loaded:', tgUser);
+                console.log('✅ Telegram User Found:', tgUser);
             } else {
-                // ─── FALLBACK USER ─────────────────────────────────────
-                console.warn('⚠️ No Telegram user data, using fallback');
-                tgUser = {
-                    id: 'user_' + Date.now(),
-                    first_name: 'Guest',
-                    last_name: '',
-                    username: 'guest',
-                    photo_url: 'https://ui-avatars.com/api/?name=Guest&background=E74C3C&color=fff&size=128'
-                };
+                console.warn('⚠️ No Telegram user data');
+                tgUser = null;
             }
         } catch(e) {
-            // ─── FALLBACK ──────────────────────────────────────────────
-            console.warn('⚠️ Telegram WebApp not available, using fallback:', e);
+            console.warn('⚠️ Telegram WebApp error:', e);
             tg = null;
-            tgUser = {
-                id: 'user_' + Date.now(),
-                first_name: 'Guest',
-                last_name: '',
-                username: 'guest',
-                photo_url: 'https://ui-avatars.com/api/?name=Guest&background=E74C3C&color=fff&size=128'
-            };
+            tgUser = null;
         }
 
-        // ─── FIREBASE CONFIG ──────────────────────────────────────────
+        // ─── 2. FALLBACK USER (যদি Telegram থেকে ডেটা না আসে) ──────────────
+        // এই ফ্যালব্যাক ইউজার ব্যবহার করা হবে যদি Telegram থেকে কোনো ডেটা না আসে
+        const FALLBACK_USER = {
+            id: 'user_' + Date.now(),
+            first_name: 'Guest',
+            last_name: '',
+            username: 'guest',
+            photo_url: ''
+        };
+
+        // যদি tgUser null বা undefined হয়, তাহলে ফ্যালব্যাক ইউজার ব্যবহার করব
+        const activeUser = tgUser || FALLBACK_USER;
+        
+        // ─── 3. FIREBASE CONFIG ──────────────────────────────────────────
         const firebaseConfig = {
             apiKey: "AIzaSyB8leAjKEjUJAtF5TE43EO-HduxwpCSxIU",
             authDomain: "infinity-earn-286dc.firebaseapp.com",
@@ -316,7 +316,7 @@
                 updateProgress(90);
 
                 loadAdSdk(appConfig.adZoneId);
-                earningWalletBalance = parseFloat(localStorage.getItem(`earningWallet_${tgUser.id}`) || '0');
+                earningWalletBalance = parseFloat(localStorage.getItem(`earningWallet_${activeUser.id}`) || '0');
                 
                 renderUI(); 
                 setupNavigation(); 
@@ -328,7 +328,7 @@
                     document.getElementById('app').style.display = 'block';
                     if (appConfig.welcomeMessage && !userState.welcomed) {
                         showPopup(`<h2>Welcome!</h2><p>${appConfig.welcomeMessage}</p><button class="popup-close-btn">Continue</button>`);
-                        db.ref(`users/${tgUser.id}/welcomed`).set(true);
+                        db.ref(`users/${activeUser.id}/welcomed`).set(true);
                     }
                 }, 300);
             } catch (error) { 
@@ -346,7 +346,7 @@
         };
 
         const loadUserData = async (db) => {
-            const userRef = db.ref(`users/${tgUser.id}`);
+            const userRef = db.ref(`users/${activeUser.id}`);
             const snapshot = await userRef.once('value');
             let userData = snapshot.val();
             
@@ -355,11 +355,11 @@
                 const referralId = (startParam && !isNaN(startParam)) ? startParam : null;
                 
                 userData = { 
-                    id: tgUser.id, 
-                    firstName: tgUser.first_name || '', 
-                    lastName: tgUser.last_name || '', 
-                    username: tgUser.username || '', 
-                    photoUrl: tgUser.photo_url || '', 
+                    id: activeUser.id, 
+                    firstName: activeUser.first_name || '', 
+                    lastName: activeUser.last_name || '', 
+                    username: activeUser.username || '', 
+                    photoUrl: activeUser.photo_url || '', 
                     balance: 0, 
                     referrals: 0, 
                     referredBy: referralId, 
@@ -373,7 +373,7 @@
                 };
                 await userRef.set(userData);
                 
-                if (referralId && referralId != tgUser.id) {
+                if (referralId && referralId != activeUser.id) {
                     const referrerRef = db.ref(`users/${referralId}`);
                     const bonusAmount = parseFloat(appConfig.referralBonus || 0);
                     
@@ -403,16 +403,32 @@
         const loadTransactionHistory = async (db) => {
             userTransactions = [];
             const statuses = ['pending', 'completed', 'rejected'];
-            const historyPromises = statuses.map(status => db.ref(`withdrawals/${status}`).orderByChild('userId').equalTo(tgUser.id).once('value'));
+            const historyPromises = statuses.map(status => db.ref(`withdrawals/${status}`).orderByChild('userId').equalTo(activeUser.id).once('value'));
             const snapshots = await Promise.all(historyPromises);
             snapshots.forEach(snap => { snap.forEach(childSnap => { userTransactions.push(childSnap.val()); }); });
             userTransactions.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
         };
         
         const renderUI = () => {
-            const photoUrl = userState.photoUrl || `https://ui-avatars.com/api/?name=${userState.firstName || 'U'}&background=E74C3C&color=fff&size=128`;
+            // ─── ইউজারের নাম ও ফটো সেট করা ──────────────────────────────
+            const firstName = userState.firstName || '';
+            const lastName = userState.lastName || '';
+            const fullName = (firstName + ' ' + lastName).trim() || 'User';
+            
+            // প্রোফাইল ফটো: যদি photoUrl থাকে তাহলে সেটা ব্যবহার করব, নাহলে UI Avatars
+            let photoUrl = userState.photoUrl || '';
+            if (!photoUrl) {
+                // UI Avatars থেকে ডাইনামিক এভাটার তৈরি
+                const initial = firstName.charAt(0) || 'U';
+                photoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(initial)}&background=E74C3C&color=fff&size=128&font-size=0.5`;
+            }
+            
             document.getElementById('user-photo').src = photoUrl;
-            document.getElementById('user-name').textContent = `${userState.firstName || ''} ${userState.lastName || ''}`.trim() || 'User';
+            document.getElementById('user-photo').onerror = function() {
+                // যদি ইমেজ লোড না হয়, তাহলে ফ্যালব্যাক ইমেজ
+                this.src = `https://ui-avatars.com/api/?name=U&background=E74C3C&color=fff&size=128`;
+            };
+            document.getElementById('user-name').textContent = fullName;
             document.getElementById('user-balance').textContent = (userState.balance || 0).toFixed(2);
             document.getElementById('daily-ads-watched').textContent = `${userState.dailyAdCount || 0} / ${appConfig.dailyAdLimit || 0}`;
             document.getElementById('referral-count').textContent = userState.referrals || 0;
@@ -451,7 +467,7 @@
             }
             try {
                 const db = firebase.database();
-                const earningsPromises = dates.map(date => db.ref(`userEarnings/${tgUser.id}/${date}`).once('value'));
+                const earningsPromises = dates.map(date => db.ref(`userEarnings/${activeUser.id}/${date}`).once('value'));
                 const snapshots = await Promise.all(earningsPromises);
                 const earningsData = snapshots.map(snap => snap.val() || 0);
                 const maxEarning = Math.max(...earningsData, 1);
@@ -492,14 +508,14 @@
                 const adValue = appConfig.adValue || 0;
                 
                 earningWalletBalance += adValue;
-                localStorage.setItem(`earningWallet_${tgUser.id}`, earningWalletBalance.toString());
+                localStorage.setItem(`earningWallet_${activeUser.id}`, earningWalletBalance.toString());
 
                 userState.dailyAdCount++;
                 userState.lifetimeAdCount++;
                 userState.totalEarned = (userState.totalEarned || 0) + adValue;
 
                 const db = firebase.database(); 
-                const userRef = db.ref(`users/${tgUser.id}`);
+                const userRef = db.ref(`users/${activeUser.id}`);
                 const updates = {};
                 updates.dailyAdCount = userState.dailyAdCount;
                 updates.lifetimeAdCount = userState.lifetimeAdCount;
@@ -511,7 +527,7 @@
                 await userRef.update(updates);
                 
                 const today = new Date().toISOString().slice(0, 10);
-                await db.ref(`userEarnings/${tgUser.id}/${today}`).set(firebase.database.ServerValue.increment(adValue));
+                await db.ref(`userEarnings/${activeUser.id}/${today}`).set(firebase.database.ServerValue.increment(adValue));
 
                 try { tg?.HapticFeedback?.notificationOccurred('success'); } catch(e) {}
                 try { tg?.showAlert(`+${adValue.toFixed(2)} TK added to your Earning Wallet.`); } catch(e) { alert(`+${adValue.toFixed(2)} TK added.`); }
@@ -535,10 +551,10 @@
             btn.textContent = 'Moving...';
             try {
                 const db = firebase.database();
-                await db.ref(`users/${tgUser.id}/balance`).set(firebase.database.ServerValue.increment(earningWalletBalance));
+                await db.ref(`users/${activeUser.id}/balance`).set(firebase.database.ServerValue.increment(earningWalletBalance));
                 userState.balance += earningWalletBalance;
                 earningWalletBalance = 0;
-                localStorage.setItem(`earningWallet_${tgUser.id}`, '0');
+                localStorage.setItem(`earningWallet_${activeUser.id}`, '0');
                 try { tg?.HapticFeedback?.notificationOccurred('success'); } catch(e) {}
                 try { tg?.showAlert("Successfully moved to main balance!"); } catch(e) { alert("Moved to main!"); }
             } catch(error) { 
@@ -635,7 +651,7 @@
                 setTimeout(async () => {
                     try {
                         const db = firebase.database(); 
-                        const userRef = db.ref(`users/${tgUser.id}`);
+                        const userRef = db.ref(`users/${activeUser.id}`);
                         await userRef.child(`completedTasks/${taskId}`).set(true);
                         await userRef.child('balance').set(firebase.database.ServerValue.increment(task.reward));
                         userState.balance += task.reward;
@@ -695,11 +711,11 @@
                 userState.balance -= amount;
                 renderUI(); 
                 
-                await db.ref(`users/${tgUser.id}/balance`).set(firebase.database.ServerValue.increment(-amount));
+                await db.ref(`users/${activeUser.id}/balance`).set(firebase.database.ServerValue.increment(-amount));
                 const reqId = db.ref('withdrawals/pending').push().key;
                 const newRequest = { 
                     id: reqId, 
-                    userId: tgUser.id, 
+                    userId: activeUser.id, 
                     userName: `${userState.firstName} ${userState.lastName}`.trim() || 'User', 
                     method: selectedMethod.name, 
                     account: accountNumber, 
@@ -782,7 +798,7 @@
         const renderReferralSection = () => {
             const container = document.getElementById('referral-section');
             const botName = appConfig.botUsername || 'OrangeEarnBot';
-            const refLink = `https://t.me/${botName}/app?startapp=${tgUser.id}`;
+            const refLink = `https://t.me/${botName}/app?startapp=${activeUser.id}`;
             container.innerHTML = `<div class="task-container" style="flex-direction: column; align-items: stretch;"><h3>Refer & Earn More!</h3><p>Invite friends and earn ${appConfig.referralBonus || 0} TK per referral.</p><input type="text" id="referral-link" value="${refLink}" readonly style="padding: 10px; text-align: center; border-radius: 8px; border: 1px dashed var(--primary-color); margin: 10px 0;"><button id="copy-ref-link-btn" class="action-btn">Copy Link</button></div>`;
         };
 
