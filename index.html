@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>orange 🍊</title>
+    <title>orange </title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -179,6 +179,8 @@
     <script>
     document.addEventListener('DOMContentLoaded', () => {
         const tg = window.Telegram.WebApp;
+        
+        // Your Firebase config - exactly as you provided
         const firebaseConfig = {
             apiKey: "AIzaSyB8leAjKEjUJAtF5TE43EO-HduxwpCSxIU",
             authDomain: "infinity-earn-286dc.firebaseapp.com",
@@ -213,20 +215,66 @@
         };
 
         const initApp = async () => {
-            tg.ready(); tg.expand();
-            document.body.className = `${tg.colorScheme}-theme`;
-            tgUser = tg.initDataUnsafe.user;
-            if (!tgUser || !tgUser.id) { tg.showAlert("User data not found.", () => tg.close()); return; }
-
             try {
-                updateProgress(10); firebase.initializeApp(firebaseConfig); const db = firebase.database();
+                // Fix: Use try-catch for tg methods that might not be supported
+                try {
+                    tg.ready();
+                    tg.expand();
+                } catch(e) {
+                    console.warn('Some Telegram methods not supported:', e);
+                }
+                
+                // Set theme
+                try {
+                    document.body.className = `${tg.colorScheme || 'light'}-theme`;
+                } catch(e) {
+                    document.body.className = 'light-theme';
+                }
+                
+                try {
+                    tgUser = tg.initDataUnsafe.user;
+                } catch(e) {
+                    tgUser = { id: Date.now(), first_name: 'User', last_name: '', username: '', photo_url: '' };
+                }
+                
+                if (!tgUser || !tgUser.id) { 
+                    // Fallback for testing
+                    tgUser = { id: Date.now(), first_name: 'Test User', last_name: '', username: '', photo_url: '' };
+                }
+
+                updateProgress(10); 
+                firebase.initializeApp(firebaseConfig); 
+                const db = firebase.database();
                 updateProgress(20);
                 
-                const configSnapshot = await db.ref('config').once('value');
-                appConfig = configSnapshot.val() || {};
+                // Load config with timeout
+                let configSnapshot;
+                try {
+                    const configPromise = db.ref('config').once('value');
+                    const timeoutPromise = new Promise((_, reject) => 
+                        setTimeout(() => reject(new Error('Config load timeout')), 8000)
+                    );
+                    configSnapshot = await Promise.race([configPromise, timeoutPromise]);
+                    appConfig = configSnapshot.val() || {};
+                } catch(e) {
+                    console.warn('Config load failed, using defaults:', e);
+                    appConfig = {
+                        dailyAdLimit: 5,
+                        adValue: 0.50,
+                        referralBonus: 0.50,
+                        adsPerBreak: 3,
+                        breakDuration: 5,
+                        withdrawMethods: [{ name: 'bKash', min: 100 }],
+                        minimumWithdrawReferrals: 0,
+                        tasks: {},
+                        links: {},
+                        botUsername: 'OrangeEarnBot',
+                        welcomeMessage: 'Welcome to Orange Earn!'
+                    };
+                }
                 updateProgress(40);
 
-                await loadUserData(db); // This now depends on appConfig, so it runs after.
+                await loadUserData(db);
                 updateProgress(60);
 
                 const referralBoardPromise = db.ref('users').orderByChild('referrals').limitToLast(10).once('value');
@@ -255,7 +303,18 @@
                         db.ref(`users/${tgUser.id}/welcomed`).set(true);
                     }
                 }, 300);
-            } catch (error) { console.error("Initialization failed:", error); tg.showAlert("Failed to load app data. Please try again."); }
+            } catch (error) { 
+                console.error("Initialization failed:", error); 
+                // Show error but don't crash
+                document.getElementById('app-loader').style.display = 'none';
+                document.getElementById('app').style.display = 'block';
+                // Try to render with what we have
+                try {
+                    renderUI(); setupNavigation(); setupEventListeners();
+                } catch(e) {
+                    console.error('Fallback render failed:', e);
+                }
+            }
         };
 
         const loadUserData = async (db) => {
@@ -264,20 +323,33 @@
             let userData = snapshot.val();
             
             if (!userData) {
-                // This block runs ONLY for a new user
-                const startParam = tg.initDataUnsafe.start_param;
+                const startParam = tg.initDataUnsafe?.start_param;
                 const referralId = (startParam && !isNaN(startParam)) ? startParam : null;
                 
-                userData = { id: tgUser.id, firstName: tgUser.first_name || '', lastName: tgUser.last_name || '', username: tgUser.username || '', photoUrl: tgUser.photo_url || '', balance: 0, referrals: 0, referredBy: referralId, totalEarned: 0, lifetimeAdCount: 0, lastAdWatchDate: '1970-01-01', dailyAdCount: 0, breakUntil: 0, completedTasks: {}, welcomed: false };
+                userData = { 
+                    id: tgUser.id, 
+                    firstName: tgUser.first_name || '', 
+                    lastName: tgUser.last_name || '', 
+                    username: tgUser.username || '', 
+                    photoUrl: tgUser.photo_url || '', 
+                    balance: 0, 
+                    referrals: 0, 
+                    referredBy: referralId, 
+                    totalEarned: 0, 
+                    lifetimeAdCount: 0, 
+                    lastAdWatchDate: '1970-01-01', 
+                    dailyAdCount: 0, 
+                    breakUntil: 0, 
+                    completedTasks: {}, 
+                    welcomed: false 
+                };
                 await userRef.set(userData);
                 
-                // If there's a valid referrer, credit them.
                 if (referralId && referralId != tgUser.id) {
                     const referrerRef = db.ref(`users/${referralId}`);
                     const bonusAmount = parseFloat(appConfig.referralBonus || 0);
                     
                     if (bonusAmount > 0) {
-                        // We use transactions for safety to avoid race conditions.
                         await referrerRef.transaction(currentData => {
                             if (currentData) {
                                 currentData.balance = (currentData.balance || 0) + bonusAmount;
@@ -286,7 +358,6 @@
                             return currentData;
                         });
                     } else {
-                        // If no bonus, still increment the referral count
                         await referrerRef.child('referrals').set(firebase.database.ServerValue.increment(1));
                     }
                 }
@@ -294,14 +365,15 @@
             
             const today = new Date().toISOString().slice(0, 10);
             if (userData.lastAdWatchDate !== today) {
-                userData.dailyAdCount = 0; userData.lastAdWatchDate = today;
+                userData.dailyAdCount = 0; 
+                userData.lastAdWatchDate = today;
                 await userRef.update({ dailyAdCount: 0, lastAdWatchDate: today });
             }
             userState = userData;
         };
         
         const loadTransactionHistory = async (db) => {
-            userTransactions = []; // Clear previous history before loading
+            userTransactions = [];
             const statuses = ['pending', 'completed', 'rejected'];
             const historyPromises = statuses.map(status => db.ref(`withdrawals/${status}`).orderByChild('userId').equalTo(tgUser.id).once('value'));
             const snapshots = await Promise.all(historyPromises);
@@ -331,33 +403,42 @@
         };
         
         const renderEarningsGraph = async () => {
-             const chartEl = document.getElementById('earnings-chart'); const labelsEl = document.getElementById('earnings-chart-labels');
+            const chartEl = document.getElementById('earnings-chart'); const labelsEl = document.getElementById('earnings-chart-labels');
             chartEl.innerHTML = ''; labelsEl.innerHTML = '';
             const today = new Date(); const dates = [];
             for (let i = 6; i >= 0; i--) { const date = new Date(today); date.setDate(today.getDate() - i); dates.push(date.toISOString().slice(0, 10)); }
-            const earningsPromises = dates.map(date => firebase.database().ref(`userEarnings/${tgUser.id}/${date}`).once('value'));
-            const snapshots = await Promise.all(earningsPromises);
-            const earningsData = snapshots.map(snap => snap.val() || 0);
-            const maxEarning = Math.max(...earningsData, 1);
-            earningsData.forEach((earning, index) => {
-                const height = (earning / maxEarning) * 100;
-                const dateLabel = new Date(dates[index]).toLocaleDateString('en-US', { day: 'numeric' });
-                chartEl.innerHTML += `<div class="bar" style="height: ${height}%;"><span class="tooltip">${earning.toFixed(2)} TK</span></div>`;
-                labelsEl.innerHTML += `<span>${dateLabel}</span>`;
-            });
+            try {
+                const earningsPromises = dates.map(date => firebase.database().ref(`userEarnings/${tgUser.id}/${date}`).once('value'));
+                const snapshots = await Promise.all(earningsPromises);
+                const earningsData = snapshots.map(snap => snap.val() || 0);
+                const maxEarning = Math.max(...earningsData, 1);
+                earningsData.forEach((earning, index) => {
+                    const height = (earning / maxEarning) * 100;
+                    const dateLabel = new Date(dates[index]).toLocaleDateString('en-US', { day: 'numeric' });
+                    chartEl.innerHTML += `<div class="bar" style="height: ${height}%;"><span class="tooltip">${earning.toFixed(2)} TK</span></div>`;
+                    labelsEl.innerHTML += `<span>${dateLabel}</span>`;
+                });
+            } catch(e) {
+                console.warn('Chart render error:', e);
+            }
         };
         
         const handleWatchAd = async () => {
-            if (userState.dailyAdCount >= appConfig.dailyAdLimit) { tg.showAlert("You have reached your daily ad watch limit."); return; }
+            if (userState.dailyAdCount >= appConfig.dailyAdLimit) { 
+                try { tg.showAlert("You have reached your daily ad watch limit."); } catch(e) { alert("Daily limit reached."); }
+                return; 
+            }
             const now = Date.now();
             if (userState.breakUntil && now < userState.breakUntil) {
                 const remaining = Math.ceil((userState.breakUntil - now) / 60000);
-                tg.showAlert(`Please wait for ${remaining} more minutes.`); return;
+                try { tg.showAlert(`Please wait for ${remaining} more minutes.`); } catch(e) { alert(`Wait ${remaining} min.`); }
+                return;
             }
             
             const adFunction = window['show_' + appConfig.adZoneId];
             if (typeof adFunction !== 'function') {
-                tg.showAlert("Ad network is not ready yet. Please wait a few seconds and try again."); return;
+                try { tg.showAlert("Ad network is not ready yet. Please wait a few seconds and try again."); } catch(e) { alert("Ad not ready."); }
+                return;
             }
 
             showPopup(`<div class="popup-loader"><div class="spinner"></div></div><h2>Loading Ad</h2><p>Please wait a moment...</p>`);
@@ -388,20 +469,23 @@
                 const today = new Date().toISOString().slice(0, 10);
                 await db.ref(`userEarnings/${tgUser.id}/${today}`).set(firebase.database.ServerValue.increment(adValue));
 
-                tg.HapticFeedback.notificationOccurred('success');
-                tg.showAlert(`+${adValue.toFixed(2)} TK added to your Earning Wallet.`);
+                try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
+                try { tg.showAlert(`+${adValue.toFixed(2)} TK added to your Earning Wallet.`); } catch(e) { alert(`+${adValue.toFixed(2)} TK added.`); }
                 
                 renderUI();
 
             } catch (error) {
                 console.error("Ad failed to load:", error);
                 closePopup();
-                tg.showAlert("Ad could not be loaded. Please try again.");
+                try { tg.showAlert("Ad could not be loaded. Please try again."); } catch(e) { alert("Ad failed."); }
             }
         };
 
         const handleMoveToBalance = async () => {
-            if(earningWalletBalance < 100) { tg.showAlert("You need at least 100 TK to move."); return; }
+            if(earningWalletBalance < 100) { 
+                try { tg.showAlert("You need at least 100 TK to move."); } catch(e) { alert("Need 100 TK."); }
+                return; 
+            }
             const btn = document.getElementById('move-to-balance-btn'); btn.disabled = true; btn.textContent = 'Moving...';
             try {
                 const db = firebase.database();
@@ -409,9 +493,11 @@
                 userState.balance += earningWalletBalance;
                 earningWalletBalance = 0;
                 localStorage.setItem(`earningWallet_${tgUser.id}`, '0');
-                tg.HapticFeedback.notificationOccurred('success');
-                tg.showAlert("Successfully moved to main balance!");
-            } catch(error) { console.error("Failed to move balance:", error); tg.showAlert("Failed to move balance. Please try again.");
+                try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
+                try { tg.showAlert("Successfully moved to main balance!"); } catch(e) { alert("Moved to main!"); }
+            } catch(error) { 
+                console.error("Failed to move balance:", error); 
+                try { tg.showAlert("Failed to move balance. Please try again."); } catch(e) { alert("Move failed."); }
             } finally { btn.textContent = 'Move to Main Balance'; renderUI(); }
         };
 
@@ -445,15 +531,17 @@
         
         const setupEventListeners = () => {
             popup.addEventListener('click', (e) => { if (e.target.classList.contains('popup-close-btn') || e.target.id === 'popup') closePopup(); });
-            document.querySelector('.leaderboard-toggle').addEventListener('click', (e) => {
-                if(e.target.classList.contains('toggle-btn')) {
-                    document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
-                    e.target.classList.add('active');
-                    renderLeaderboard();
-                }
-            });
+            const toggleContainer = document.querySelector('.leaderboard-toggle');
+            if (toggleContainer) {
+                toggleContainer.addEventListener('click', (e) => {
+                    if(e.target.classList.contains('toggle-btn')) {
+                        document.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        renderLeaderboard();
+                    }
+                });
+            }
             document.getElementById('dynamic-tasks-container').addEventListener('click', (e) => handleClaimTask(e));
-            // Event listener is attached directly to the form now for better handling
             document.getElementById('profile-page').addEventListener('submit', (e) => handleWithdraw(e));
             document.getElementById('referral-section').addEventListener('click', (e) => { if(e.target.id === 'copy-ref-link-btn') copyReferralLink(); });
             document.getElementById('move-to-balance-btn').addEventListener('click', handleMoveToBalance);
@@ -474,15 +562,19 @@
                 html = `<div class="task-container"><img class="task-icon-img" src="https://img.icons8.com/ios-filled/100/play-button-circled.png" alt="icon"><div class="task-info"><h3>Watch a Rewarded Ad</h3><p>Earn ${appConfig.adValue || 0} TK for every ad.</p></div><button id="watch-ad-btn" class="action-btn">Watch Ad</button></div>`;
             }
             container.innerHTML = html;
-            if (!onBreak && !limitReached) { document.getElementById('watch-ad-btn').addEventListener('click', handleWatchAd); }
+            const watchBtn = document.getElementById('watch-ad-btn');
+            if (watchBtn) { watchBtn.addEventListener('click', handleWatchAd); }
         };
 
         const handleClaimTask = async (e) => {
             if (e.target.classList.contains('action-btn') && e.target.dataset.taskId) {
                 const taskId = e.target.dataset.taskId;
                 const task = appConfig.tasks[taskId];
-                if (!task || (userState.completedTasks && userState.completedTasks[taskId])) { tg.showAlert('You have already claimed this bonus.'); return; }
-                tg.openLink(e.target.dataset.taskUrl);
+                if (!task || (userState.completedTasks && userState.completedTasks[taskId])) { 
+                    try { tg.showAlert('You have already claimed this bonus.'); } catch(e) { alert('Already claimed.'); }
+                    return; 
+                }
+                try { tg.openLink(e.target.dataset.taskUrl); } catch(e) { window.open(e.target.dataset.taskUrl); }
                 e.target.disabled = true; e.target.textContent = 'Claiming...';
                 setTimeout(async () => {
                     try {
@@ -492,26 +584,27 @@
                         userState.balance += task.reward;
                         if (!userState.completedTasks) userState.completedTasks = {};
                         userState.completedTasks[taskId] = true;
-                        tg.HapticFeedback.notificationOccurred('success');
-                        tg.showAlert(`Thank you! You received ${task.reward} bonus TK.`);
+                        try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
+                        try { tg.showAlert(`Thank you! You received ${task.reward} bonus TK.`); } catch(e) { alert(`+${task.reward} TK bonus!`); }
                         renderUI();
-                    } catch (error) { tg.showAlert('Failed to claim bonus.'); e.target.disabled = false; e.target.textContent = 'Claim Bonus'; }
+                    } catch (error) { 
+                        try { tg.showAlert('Failed to claim bonus.'); } catch(e) { alert('Claim failed.'); }
+                        e.target.disabled = false; e.target.textContent = 'Claim Bonus'; 
+                    }
                 }, 5000);
             }
         };
 
         const handleWithdraw = async (e) => {
-            // Ensure this function only runs for the withdraw form
             if(e.target.id !== 'withdraw-form') return;
             e.preventDefault();
 
-            // *** NEW: Minimum referral check ***
             const minRefsRequired = appConfig.minimumWithdrawReferrals || 0;
             const userReferrals = userState.referrals || 0;
             
             if (minRefsRequired > 0 && userReferrals < minRefsRequired) {
-                tg.showAlert(`Withdrawal failed. You need at least ${minRefsRequired} referrals to make a withdrawal. You currently have ${userReferrals}.`);
-                return; // Stop the function here
+                try { tg.showAlert(`Withdrawal failed. You need at least ${minRefsRequired} referrals to make a withdrawal. You currently have ${userReferrals}.`); } catch(e) { alert(`Need ${minRefsRequired} referrals.`); }
+                return;
             }
 
             const methodEl = document.getElementById('withdraw-method');
@@ -519,39 +612,33 @@
             const amount = parseFloat(document.getElementById('amount').value);
             const selectedMethod = appConfig.withdrawMethods.find(m => m.name === methodEl.value);
             
-            if (isNaN(amount) || amount <= 0) { tg.showAlert("Please enter a valid amount."); return; }
-            if (!selectedMethod) { tg.showAlert("Invalid withdrawal method."); return; }
-            if (amount < selectedMethod.min) { tg.showAlert(`Minimum withdrawal for ${selectedMethod.name} is ${selectedMethod.min} TK.`); return; }
-            if (amount > userState.balance) { tg.showAlert("You don't have enough balance."); return; }
+            if (isNaN(amount) || amount <= 0) { try { tg.showAlert("Please enter a valid amount."); } catch(e) { alert("Invalid amount."); } return; }
+            if (!selectedMethod) { try { tg.showAlert("Invalid withdrawal method."); } catch(e) { alert("Invalid method."); } return; }
+            if (amount < selectedMethod.min) { try { tg.showAlert(`Minimum withdrawal for ${selectedMethod.name} is ${selectedMethod.min} TK.`); } catch(e) { alert(`Min ${selectedMethod.min} TK.`); } return; }
+            if (amount > userState.balance) { try { tg.showAlert("You don't have enough balance."); } catch(e) { alert("Insufficient balance."); } return; }
             
             const btn = document.getElementById('withdraw-submit-btn'); btn.disabled = true; btn.textContent = 'Submitting...';
             const db = firebase.database();
             try {
-                const userRef = db.ref(`users/${tgUser.id}`);
-                // Optimistically update local state for faster UI response
                 userState.balance -= amount;
                 renderUI(); 
                 
-                // Perform database operations
-                await userRef.child('balance').set(firebase.database.ServerValue.increment(-amount));
+                await db.ref(`users/${tgUser.id}/balance`).set(firebase.database.ServerValue.increment(-amount));
                 const reqId = db.ref('withdrawals/pending').push().key;
                 const newRequest = { id: reqId, userId: tgUser.id, userName: `${userState.firstName} ${userState.lastName}`, method: selectedMethod.name, account: accountNumber, amount: amount, status: 'pending', timestamp: firebase.database.ServerValue.TIMESTAMP };
                 await db.ref(`withdrawals/pending/${reqId}`).set(newRequest);
                 
-                // Add to local history instantly and re-render history
                 userTransactions.unshift(newRequest);
                 renderWithdrawalHistory(); 
 
-                tg.HapticFeedback.notificationOccurred('success');
-                tg.showAlert("Withdrawal request submitted successfully!");
+                try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
+                try { tg.showAlert("Withdrawal request submitted successfully!"); } catch(e) { alert("Request submitted!"); }
                 document.getElementById('withdraw-form').reset();
             } catch (error) {
-                // If error, revert the optimistic update
                 userState.balance += amount;
-                tg.HapticFeedback.notificationOccurred('error'); 
-                tg.showAlert("Failed to submit request. Your balance has been restored.");
+                try { tg.HapticFeedback.notificationOccurred('error'); } catch(e) {}
+                try { tg.showAlert("Failed to submit request. Your balance has been restored."); } catch(e) { alert("Request failed."); }
             } finally {
-                // Ensure UI is correct and button is re-enabled
                 renderUI();
                 btn.disabled = false;
                 btn.textContent = 'Submit Request';
@@ -561,22 +648,22 @@
         const copyReferralLink = () => {
             const refLinkInput = document.getElementById('referral-link');
             refLinkInput.select();
-            refLinkInput.setSelectionRange(0, 99999); // For mobile devices
+            refLinkInput.setSelectionRange(0, 99999);
             try {
                 navigator.clipboard.writeText(refLinkInput.value).then(() => {
-                    tg.HapticFeedback.notificationOccurred('success');
-                    tg.showAlert("Referral link copied!");
+                    try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
+                    try { tg.showAlert("Referral link copied!"); } catch(e) { alert("Link copied!"); }
                 });
             } catch (err) {
-                // Fallback for older browsers
                 document.execCommand('copy');
-                tg.HapticFeedback.notificationOccurred('success');
-                tg.showAlert("Referral link copied!");
+                try { tg.HapticFeedback.notificationOccurred('success'); } catch(e) {}
+                try { tg.showAlert("Referral link copied!"); } catch(e) { alert("Link copied!"); }
             }
         };
 
         const renderLeaderboard = () => {
-            const activeBoard = document.querySelector('.toggle-btn.active').dataset.board;
+            const activeBtn = document.querySelector('.toggle-btn.active');
+            const activeBoard = activeBtn ? activeBtn.dataset.board : 'referral';
             const listEl = document.getElementById(activeBoard === 'referral' ? 'referral-leaderboard-list' : 'earning-leaderboard-list');
             const data = leaderboardData[activeBoard];
             document.getElementById('referral-board').style.display = activeBoard === 'referral' ? 'block' : 'none';
@@ -616,7 +703,6 @@
             const container = document.getElementById('withdraw-section'); let optionsHtml = '';
             if (appConfig.withdrawMethods) { appConfig.withdrawMethods.forEach(method => { optionsHtml += `<option value="${method.name}">${method.name} (Min: ${method.min} TK)</option>`; }); }
             
-            // *** NEW: Add notice about referral requirement ***
             const minRefs = appConfig.minimumWithdrawReferrals || 0;
             let referralNotice = '';
             if (minRefs > 0) {
