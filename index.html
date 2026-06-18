@@ -112,18 +112,6 @@
         .rank { font-size: 1.2rem; font-weight: 700; color: var(--primary-color); width: 40px; }
         .leaderboard-item img { width: 40px; height: 40px; border-radius: 50%; margin-right: 10px; object-fit: cover; }
         .leaderboard-name { font-weight: 600; flex-grow: 1; } .leaderboard-score { font-weight: 600; color: var(--primary-color); }
-        
-        /* Ad loading indicator */
-        .ad-loading {
-            text-align: center;
-            padding: 10px;
-            color: var(--text-secondary-light);
-            font-size: 0.85rem;
-        }
-        .ad-loading i {
-            margin-right: 8px;
-            animation: spin 1s linear infinite;
-        }
     </style>
 </head>
 <body>
@@ -194,7 +182,6 @@
         let tg = null;
         let tgUser = null;
         let startParam = null;
-        let adSdkLoaded = false;
         
         try {
             tg = window.Telegram.WebApp;
@@ -213,7 +200,7 @@
                     username: userData.username || '',
                     photo_url: userData.photo_url || ''
                 };
-                console.log('✅ Telegram User:', tgUser.first_name, tgUser.last_name);
+                console.log('✅ Telegram User:', tgUser);
             } else {
                 console.warn('⚠️ No Telegram user data');
                 tgUser = null;
@@ -234,7 +221,6 @@
         };
 
         const activeUser = tgUser || FALLBACK_USER;
-        console.log('Active User:', activeUser);
         
         // ─── 3. FIREBASE CONFIG ──────────────────────────────────────────
         const firebaseConfig = {
@@ -268,10 +254,8 @@
                 return false;
             }
             
-            // Check if already loaded
             if (document.querySelector(`script[data-zone='${zoneId}']`)) {
                 console.log('✅ Ad SDK already loaded');
-                adSdkLoaded = true;
                 return true;
             }
             
@@ -286,19 +270,16 @@
                 
                 script.onload = () => {
                     console.log('✅ Ad SDK loaded successfully');
-                    adSdkLoaded = true;
                     resolve(true);
                 };
                 
                 script.onerror = () => {
                     console.error('❌ Ad SDK failed to load');
-                    adSdkLoaded = false;
                     resolve(false);
                 };
                 
-                // Timeout after 10 seconds
                 setTimeout(() => {
-                    if (!adSdkLoaded) {
+                    if (!document.querySelector(`script[data-zone='${zoneId}']`)) {
                         console.warn('⏰ Ad SDK load timeout');
                         resolve(false);
                     }
@@ -468,7 +449,6 @@
             const lastName = userState.lastName || '';
             let fullName = (firstName + ' ' + lastName).trim();
             
-            // যদি নাম খালি থাকে, তাহলে Telegram থেকে আবার চেক করি
             if (!fullName || fullName === '') {
                 if (tgUser && tgUser.first_name) {
                     fullName = (tgUser.first_name + ' ' + (tgUser.last_name || '')).trim();
@@ -478,8 +458,16 @@
                 }
             }
             
-            // Profile photo
+            // ─── PROFILE PHOTO FIX ──────────────────────────────────────
+            // Try multiple sources for photo
             let photoUrl = userState.photoUrl || '';
+            
+            // If no photo in Firebase, try Telegram
+            if (!photoUrl && tgUser && tgUser.photo_url) {
+                photoUrl = tgUser.photo_url;
+            }
+            
+            // If still no photo, use UI Avatars
             if (!photoUrl) {
                 const initial = fullName.charAt(0).toUpperCase() || 'U';
                 photoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(initial)}&background=E74C3C&color=fff&size=128&font-size=0.5`;
@@ -488,7 +476,9 @@
             const photoEl = document.getElementById('user-photo');
             photoEl.src = photoUrl;
             photoEl.onerror = function() {
-                this.src = `https://ui-avatars.com/api/?name=U&background=E74C3C&color=fff&size=128`;
+                // যদি ইমেজ লোড না হয়, তাহলে UI Avatars ব্যবহার করব
+                const initial = fullName.charAt(0).toUpperCase() || 'U';
+                this.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(initial)}&background=E74C3C&color=fff&size=128`;
             };
             
             document.getElementById('user-name').textContent = fullName;
@@ -545,7 +535,7 @@
             }
         };
         
-        // ─── 5. WATCH AD (FIXED) ─────────────────────────────────────────
+        // ─── 5. WATCH AD (FIXED - BALANCE ADDING) ──────────────────────
         const handleWatchAd = async () => {
             if (userState.dailyAdCount >= appConfig.dailyAdLimit) { 
                 try { tg?.showAlert("You have reached your daily ad watch limit."); } catch(e) { alert("Daily limit reached."); }
@@ -560,25 +550,20 @@
             
             const zoneId = appConfig.adZoneId;
             if (!zoneId) {
-                try { tg?.showAlert("Ad is not configured. Please contact support."); } catch(e) { alert("Ad not configured."); }
+                try { tg?.showAlert("Ad is not configured."); } catch(e) { alert("Ad not configured."); }
                 return;
             }
             
             // Check if ad function is available
             let adFunction = window['show_' + zoneId];
             
-            // যদি না থাকে, তাহলে SDK রিলোড করার চেষ্টা করি
             if (typeof adFunction !== 'function') {
                 try { tg?.showAlert("Loading ad SDK, please wait..."); } catch(e) { alert("Loading ad..."); }
-                
-                // Try to load SDK
                 const loaded = await loadAdSdk(zoneId);
                 if (!loaded) {
-                    try { tg?.showAlert("Ad SDK failed to load. Please try again later."); } catch(e) { alert("Ad SDK failed."); }
+                    try { tg?.showAlert("Ad SDK failed to load. Please try again."); } catch(e) { alert("Ad SDK failed."); }
                     return;
                 }
-                
-                // আবার চেক করি
                 adFunction = window['show_' + zoneId];
                 if (typeof adFunction !== 'function') {
                     try { tg?.showAlert("Ad is not ready. Please try again."); } catch(e) { alert("Ad not ready."); }
@@ -589,35 +574,47 @@
             showPopup(`<div class="popup-loader"><div class="spinner"></div></div><h2>Loading Ad</h2><p>Please wait a moment...</p>`);
             
             try {
+                // ─── CALL AD FUNCTION ──────────────────────────────────
                 await adFunction();
                 closePopup();
-                const adValue = appConfig.adValue || 0;
                 
-                earningWalletBalance += adValue;
+                // ─── ADD BALANCE ──────────────────────────────────────
+                const adValue = parseFloat(appConfig.adValue) || 0.50;
+                
+                // Update earning wallet (local storage)
+                earningWalletBalance = (earningWalletBalance || 0) + adValue;
                 localStorage.setItem(`earningWallet_${activeUser.id}`, earningWalletBalance.toString());
 
-                userState.dailyAdCount++;
-                userState.lifetimeAdCount++;
+                // Update user stats
+                userState.dailyAdCount = (userState.dailyAdCount || 0) + 1;
+                userState.lifetimeAdCount = (userState.lifetimeAdCount || 0) + 1;
                 userState.totalEarned = (userState.totalEarned || 0) + adValue;
 
+                // Save to Firebase
                 const db = firebase.database(); 
                 const userRef = db.ref(`users/${activeUser.id}`);
-                const updates = {};
-                updates.dailyAdCount = userState.dailyAdCount;
-                updates.lifetimeAdCount = userState.lifetimeAdCount;
-                updates.totalEarned = userState.totalEarned;
-                if ((userState.dailyAdCount) % appConfig.adsPerBreak === 0 && appConfig.adsPerBreak > 0) {
+                const updates = {
+                    dailyAdCount: userState.dailyAdCount,
+                    lifetimeAdCount: userState.lifetimeAdCount,
+                    totalEarned: userState.totalEarned
+                };
+                
+                // Check for break
+                if (appConfig.adsPerBreak > 0 && (userState.dailyAdCount) % appConfig.adsPerBreak === 0) {
                     updates.breakUntil = Date.now() + (appConfig.breakDuration * 60000);
                     userState.breakUntil = updates.breakUntil;
                 }
                 await userRef.update(updates);
                 
+                // Update daily earnings
                 const today = new Date().toISOString().slice(0, 10);
                 await db.ref(`userEarnings/${activeUser.id}/${today}`).set(firebase.database.ServerValue.increment(adValue));
 
+                // Show success message
                 try { tg?.HapticFeedback?.notificationOccurred('success'); } catch(e) {}
-                try { tg?.showAlert(`+${adValue.toFixed(2)} TK added to your Earning Wallet.`); } catch(e) { alert(`+${adValue.toFixed(2)} TK added.`); }
+                try { tg?.showAlert(`+${adValue.toFixed(2)} TK added to your Earning Wallet!`); } catch(e) { alert(`+${adValue.toFixed(2)} TK added!`); }
                 
+                // Re-render UI
                 renderUI();
 
             } catch (error) {
@@ -711,7 +708,6 @@
             const limitReached = userState.dailyAdCount >= appConfig.dailyAdLimit;
             let html = '';
             
-            // Ad SDK status check
             const zoneId = appConfig.adZoneId;
             const isAdReady = zoneId && typeof window['show_' + zoneId] === 'function';
             
@@ -721,9 +717,8 @@
             } else if (limitReached) {
                 html = `<div class="task-container"><img class="task-icon-img" src="https://img.icons8.com/ios-filled/100/stop-circled.png" alt="icon"><div class="task-info"><h3>Daily Limit Reached</h3><p>Come back tomorrow for more ads.</p></div><button class="action-btn" disabled>Limit</button></div>`;
             } else if (!isAdReady) {
-                // Ad not ready - show loading state
                 html = `<div class="task-container" style="flex-direction:column;align-items:stretch;text-align:center;padding:30px 20px;">
-                    <div class="ad-loading"><i class="fas fa-spinner"></i> Loading Ad Network...</div>
+                    <div style="padding:10px;color:var(--text-secondary-light);font-size:0.85rem;"><i class="fas fa-spinner" style="animation:spin 1s linear infinite;margin-right:8px;"></i> Loading Ad Network...</div>
                     <p style="font-size:0.85rem;color:var(--text-secondary-light);margin-top:8px;">Please wait a moment, then try again.</p>
                     <button id="watch-ad-btn" class="action-btn" style="margin:15px auto 0;width:auto;">Retry</button>
                 </div>`;
